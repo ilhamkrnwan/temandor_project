@@ -1,0 +1,125 @@
+/* Temandor – gaya mock P0. Warna kanvas ikut konvensi gambar (README 6.4). */
+:root {
+  --paper: #f3f2ee; --panel: #fbfaf7; --ink: #17191c; --line: #dfdcd4; --muted: #6d6b66; --hazard: #f2c200;
+}
+
+/* ---------- Umum ---------- */
+.tape { background: repeating-linear-gradient(-45deg, var(--hazard) 0 7px, var(--ink) 7px 14px); }
+.mock-badge {
+  display: inline-flex; align-items: center; gap: .4rem; padding: .15rem .5rem .15rem .15rem;
+  font: 700 12px/1 'Barlow Condensed', sans-serif; letter-spacing: .08em;
+  background: var(--hazard); color: var(--ink); border: 1.5px solid var(--ink); border-radius: 4px;
+}
+.mock-badge::before { content: ""; width: 14px; height: 14px; border-radius: 2px; background: repeating-linear-gradient(-45deg, var(--ink) 0 3px, var(--hazard) 3px 6px); }
+
+.btn-primary, .btn-ghost {
+  display: inline-flex; align-items: center; justify-content: center; gap: .4rem; height: 2rem; padding: 0 .85rem;
+  border-radius: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; transition: background .12s, box-shadow .12s;
+}
+.btn-primary { background: var(--hazard); color: var(--ink); box-shadow: inset 0 -2px 0 rgb(0 0 0 / .18); }
+.btn-primary:hover { background: #ffd31a; }
+.btn-ghost { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); }
+.btn-ghost:hover { background: #fff; box-shadow: inset 0 0 0 1px #c9c5bb; }
+:is(.btn-primary, .btn-ghost, .tool, .field):focus-visible { outline: 2px solid var(--hazard); outline-offset: 2px; }
+
+.field-label { display: block; margin-bottom: .35rem; font: 700 11px/1 'Barlow Condensed', sans-serif; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.field { width: 100%; height: 2.1rem; padding: 0 .65rem; background: #fff; border: 1px solid var(--line); border-radius: 6px; }
+.field:focus, .field-unit:focus-within { outline: none; border-color: var(--ink); box-shadow: 0 0 0 3px rgb(242 194 0 / .45); }
+.field-unit { display: flex; align-items: center; height: 2.1rem; background: #fff; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.field-unit input { min-width: 0; flex: 1; height: 100%; padding: 0 .65rem; background: none; outline: none; font-family: 'JetBrains Mono', monospace; }
+.field-unit span { padding: 0 .6rem; color: var(--muted); font-size: 12px; }
+.hint { margin-top: .35rem; font-size: 12px; color: var(--muted); }
+
+/* Segmented radio (SA/EA, inch/mm) */
+.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; padding: 3px; background: #ebe9e3; border-radius: 7px; }
+.seg label { position: relative; display: grid; place-items: center; height: 1.8rem; border-radius: 5px; font-weight: 600; cursor: pointer; color: var(--muted); }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label:has(input:checked) { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgb(0 0 0 / .15); }
+.seg label:has(input:focus-visible) { outline: 2px solid var(--hazard); }
+
+/* Pilihan berbentuk kartu (format export) */
+.opt { position: relative; display: flex; flex-direction: column; gap: .2rem; padding: .7rem; border: 1px solid var(--line); border-radius: 8px; background: #fff; cursor: pointer; }
+.opt input { position: absolute; opacity: 0; }
+.opt:has(input:checked) { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.opt:has(input:focus-visible) { outline: 2px solid var(--hazard); }
+
+dialog.dlg { padding: 0; border: 0; border-radius: 12px; background: var(--panel); color: var(--ink); box-shadow: 0 30px 80px -20px rgb(0 0 0 / .45); }
+dialog.dlg::backdrop { background: rgb(23 25 28 / .5); backdrop-filter: blur(2px); }
+dialog.dlg[open] { animation: pop .16s ease-out; }
+@keyframes pop { from { opacity: 0; transform: translateY(8px) scale(.98); } }
+
+.toast {
+  position: fixed; left: 50%; bottom: 3.25rem; z-index: 60; transform: translate(-50%, 12px); opacity: 0; pointer-events: none;
+  padding: .55rem .9rem; border-radius: 8px; background: var(--ink); color: #fff; font-size: 13px; transition: .18s;
+  box-shadow: 0 10px 30px -10px rgb(0 0 0 / .5); border-left: 4px solid var(--hazard);
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---------- Beranda ---------- */
+#home-empty { display: none; }
+.is-empty #home-empty { display: block; }
+.is-empty :is(#projects, #toolbar) { display: none; }
+.card-thumb img { transition: transform .35s ease; }
+.card:hover .card-thumb img { transform: scale(1.55); }
+
+/* ---------- Editor ---------- */
+.tool { display: grid; place-items: center; width: 2.25rem; height: 2.25rem; border-radius: 6px; color: rgb(255 255 255 / .65); }
+.tool:hover { background: rgb(255 255 255 / .1); color: #fff; }
+.tool[aria-pressed="true"] { background: var(--hazard); color: var(--ink); }
+
+.lib-group summary { display: flex; align-items: center; gap: .4rem; padding: .45rem .5rem; border-radius: 6px; cursor: pointer; list-style: none;
+  font: 700 12px/1 'Barlow Condensed', sans-serif; letter-spacing: .1em; text-transform: uppercase; }
+.lib-group summary::-webkit-details-marker { display: none; }
+.lib-group summary::before { content: "▸"; font-size: 10px; color: var(--muted); transition: transform .15s; }
+.lib-group[open] summary::before { transform: rotate(90deg); }
+.lib-group summary:hover { background: #efede7; }
+.lib-item { display: flex; flex-direction: column; align-items: center; gap: .3rem; padding: .55rem .25rem .45rem; border-radius: 7px; border: 1px solid transparent; font-size: 12px; line-height: 1.15; text-align: center; }
+.lib-item img { width: 2.4rem; height: 2.4rem; }
+.lib-item:hover { background: #fff; border-color: var(--line); }
+
+.demo-bar button { padding: .3rem .6rem; border-radius: 4px; color: rgb(255 255 255 / .7); }
+.demo-bar button:hover { color: #fff; background: rgb(255 255 255 / .08); }
+.demo-bar button[aria-pressed="true"] { background: var(--hazard); color: var(--ink); font-weight: 600; }
+
+.layer-row { display: flex; align-items: center; gap: .6rem; padding: .4rem .5rem; border-radius: 6px; cursor: pointer; }
+.layer-row:hover { background: #efede7; }
+.layer-row input { accent-color: var(--ink); width: 15px; height: 15px; }
+.layer-row:has(input:not(:checked)) > :not(input) { opacity: .4; }
+.sw { width: 12px; height: 12px; border-radius: 2px; }
+
+/* Kanvas CAD: garis tetap tipis berapa pun zoom-nya (seperti AutoCAD) */
+#cad :is(path, rect, circle, line) { vector-effect: non-scaling-stroke; }
+#cad[data-tool="select"] { cursor: none; }
+#cad[data-tool="pan"] { cursor: grab; }
+#cad[data-tool="pan"]:active { cursor: grabbing; }
+#cad:not([data-tool="select"]) #xhair { display: none; }
+#E1 { cursor: pointer; }
+#E1:hover { stroke: #bfdbfe; }
+
+/* State demo lewat class di <body> */
+#empty-hint, #props-on, #warn-drawer, #warn-markers, #sel { display: none; }
+.is-empty #cad .sys { display: none; }
+.is-empty #empty-hint { display: flex; }
+.is-empty #warn-btn { visibility: hidden; }
+.is-empty .sys-info { display: none; }
+.has-selection #props-on { display: block; }
+.has-selection #props-off { display: none; }
+.has-selection #sel { display: inline; }
+.has-selection #E1 { stroke: #facc15; }
+.show-warn #warn-drawer { display: block; }
+.show-warn #warn-markers { display: inline; }
+.pulse { animation: pulse 1.4s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes pulse { from { transform: scale(.7); opacity: .9; } to { transform: scale(2); opacity: 0; } }
+.warn-item { display: flex; gap: .75rem; width: 100%; padding: .75rem 1rem; text-align: left; }
+.warn-item:hover { background: #fff; }
+
+/* Tablet/mobile: library & panel kanan jadi laci */
+#scrim { display: none; }
+@media (max-width: 1023px) {
+  #lib, #side { display: none !important; position: fixed; top: 3rem; bottom: 2rem; z-index: 40; box-shadow: 0 20px 50px -10px rgb(0 0 0 / .4); }
+  #lib { left: 3rem; width: 16rem; }
+  #side { right: 0; width: 19rem; max-width: 88vw; }
+  .open-lib #lib, .open-side #side { display: flex !important; }
+  :is(.open-lib, .open-side) #scrim { display: block; position: fixed; inset: 3rem 0 2rem 3rem; z-index: 30; background: rgb(0 0 0 / .3); }
+}
+@media (prefers-reduced-motion: reduce) { .pulse, dialog.dlg[open] { animation: none; } }

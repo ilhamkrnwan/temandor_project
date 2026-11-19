@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Editor · Temandor (MOCK)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="js/mock.js"></script>
+<link rel="stylesheet" href="css/mock.css">
+</head>
+<body class="h-dvh flex flex-col overflow-hidden bg-paper text-ink font-sans text-sm">
+
+<!-- ============ TOP BAR ============ -->
+<header class="relative h-12 shrink-0 flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 bg-panel border-b border-line">
+  <div class="tape absolute inset-x-0 top-0 h-[3px]"></div>
+  <a href="index.html" class="flex items-center gap-2 pr-2 sm:pr-3 sm:border-r border-line" title="Kembali ke daftar proyek">
+    <span class="grid place-items-center w-7 h-7 rounded bg-ink"><svg viewBox="0 0 24 24" class="w-[18px] h-[18px]" fill="none" stroke="#f2c200" stroke-width="2.2"><path d="M3 6h7a8 8 0 0 1 8 8v7M3 12h7a2 2 0 0 1 2 2v7"/></svg></span>
+    <span class="hidden md:block font-cond font-bold text-lg tracking-wide">TEMANDOR</span>
+  </a>
+  <input id="proj-name" value="Kantor Lt. 2 – Ducting" aria-label="Nama proyek"
+    class="min-w-0 flex-1 sm:flex-none sm:w-56 bg-transparent font-semibold px-2 py-1 rounded hover:bg-black/5 focus:bg-white focus:outline-none focus:ring-2 focus:ring-hazard">
+  <span class="hidden xl:inline text-muted text-xs">Tersimpan · 2 mnt lalu</span>
+  <div class="hidden sm:flex items-center ml-1">
+    <button class="tool !text-ink/70 hover:!bg-black/5" title="Undo (Ctrl+Z)" data-toast="Mock: undo aktif di P1"><svg viewBox="0 0 24 24" class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button>
+    <button class="tool !text-ink/70 hover:!bg-black/5" title="Redo (Ctrl+Y)" data-toast="Mock: redo aktif di P1"><svg viewBox="0 0 24 24" class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 14 5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg></button>
+  </div>
+  <div class="ml-auto flex items-center gap-1.5">
+    <button data-drawer="lib" class="lg:hidden btn-ghost !px-2.5">Library</button>
+    <button data-drawer="side" class="lg:hidden btn-ghost !px-2.5">Properti</button>
+    <button class="hidden sm:inline-flex btn-ghost" data-toast="Tersimpan (mock) – file .json belum ditulis">Simpan</button>
+    <button class="btn-primary" data-open="dlg-export">Export</button>
+    <span class="mock-badge hidden md:inline-flex">MOCK · P0</span>
+  </div>
+</header>
+
+<div class="flex-1 flex min-h-0">
+
+  <!-- ============ TOOLBOX ============ -->
+  <nav class="w-12 shrink-0 flex flex-col items-center gap-1 py-2 bg-ink overflow-y-auto" aria-label="Toolbox">
+    <button class="tool" data-tool="select" data-key="v" title="Select (V)" aria-pressed="true"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M5 3l14 8-6.5 1.5L10 19z"/></svg></button>
+    <button class="tool" data-tool="pan" data-key="h" title="Pan (H)"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v18M3 12h18M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3"/></svg></button>
+    <span class="w-6 h-px bg-white/15 my-1"></span>
+    <button class="tool" data-tool="room" data-key="r" title="Ruangan (R)"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4zM4 11h7v9"/></svg></button>
+    <button class="tool" data-tool="duct" data-key="d" title="Duct (D)"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9h18M3 15h18M3 7v10M21 7v10"/></svg></button>
+    <button class="tool" data-tool="fitting" data-key="f" title="Fitting (F)"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h6a10 10 0 0 1 10 10v6M3 12h6a3 3 0 0 1 3 3v6"/></svg></button>
+    <button class="tool" data-tool="equip" data-key="e" title="Equipment (E)"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="1"/><circle cx="12" cy="12" r="4"/><path d="M12 8v8M8 12h8"/></svg></button>
+    <button class="tool" data-tool="diffuser" data-key="g" title="Diffuser (G)"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 5h14v14H5zM5 5l14 14M19 5 5 19"/></svg></button>
+    <button class="tool" data-tool="label" data-key="t" title="Dimensi / Label (T)"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 18h18M3 15v6M21 15v6M7 4h10M12 4v9"/></svg></button>
+  </nav>
+
+  <!-- ============ LIBRARY ============ -->
+  <aside id="lib" class="w-60 shrink-0 flex flex-col bg-panel border-r border-line" aria-label="Library komponen">
+    <div class="p-3 border-b border-line">
+      <div class="field-label">Library komponen</div>
+      <input id="lib-search" type="search" placeholder="Cari: elbow, diffuser…" class="field" aria-label="Cari komponen">
+    </div>
+    <div class="flex-1 overflow-y-auto p-2 space-y-1">
+      <details class="lib-group" open>
+        <summary>Duct <span class="ml-auto font-mono font-normal text-muted">2</span></summary>
+        <div class="grid grid-cols-3 gap-1 p-1">
+          <button class="lib-item" data-toast="Mock: klik di kanvas untuk menaruh (P1)"><img src="assets/svg/duct-lurus.svg" alt="">Lurus</button>
+          <button class="lib-item" data-toast="Mock: klik di kanvas untuk menaruh (P1)"><img src="assets/svg/flexible.svg" alt="">Flexible</button>
+        </div>
+      </details>
+      <details class="lib-group" open>
+        <summary>Fitting <span class="ml-auto font-mono font-normal text-muted">5</span></summary>
+        <div class="grid grid-cols-3 gap-1 p-1">
+          <button class="lib-item" data-toast="Mock: klik di kanvas untuk menaruh (P1)"><img src="assets/svg/elbow-90.svg" alt="">Elbow 90°</button>
+          <button class="lib-item" data-toast="Mock: klik di kanvas untuk menaruh (P1)"><img src="assets/svg/double-elbow.svg" alt="">Double elbow</button>
+          <button class="lib-item" data-toast="Mock: klik di kanvas untuk menaruh (P1)"><img src="assets/svg/transisi.svg" alt="">Transisi</button>
+          <button class="lib-item" data-toast="Mock: klik di kanvas untuk menaruh (P1)"><img src="assets/svg/tee.svg" alt="">T</button>
+          <button class="lib-item" data-toast="Mock: klik di kanvas untuk menaruh (P1)"><img src="assets/svg/cabang.svg" alt="">Cabang</button>
+        </div>
+      </details>
+      <details class="lib-group" open>
+        <summary>Perlengkapan <span class="ml-auto font-mono font-normal text-muted">6</span></summary>
+        <div class="grid grid-cols-3 gap-1 p-1">
+          <button class="lib-item" data-toast="Mock: klik di kanvas untuk menaruh (P1)"><img src="assets/svg/diffuser.svg" alt="">Diffuser</button>
+          <button class="lib-item" data-toast="Mock: klik di kanvas untuk menaruh (P1)"><img src="assets/svg/grille.svg" alt="">Grille</button>
+          <button class="lib-item" data-toast="Mock: klik di kanvas untuk menaruh (P1)"><img src="assets/svg/damper.svg" alt="">Damper</button>
+          <button class="lib-item" data-toast="Mock: klik di kanvas untuk menaruh (P1)"><img src="assets/svg/access-door.svg" alt="">Access door</button>
+          <button class="lib-item" data-toast="Mock: klik di kanvas untuk menaruh (P1)"><img src="assets/svg/louver.svg" alt="">Louver</button>
+          <button class="lib-item" data-toast="Mock: klik di kanvas untuk menaruh (P1)"><img src="assets/svg/gantungan.svg" alt="">Gantungan</button>
+        </div>
+      </details>
+      <details class="lib-group" open>
+        <summary>Equipment <span class="ml-auto font-mono font-normal text-muted">3</span></summary>
+        <div class="grid grid-cols-3 gap-1 p-1">
+          <button class="lib-item" data-toast="Mock: klik di kanvas untuk menaruh (P1)"><img src="assets/svg/fan.svg" alt="">Fan / exhaust</button>
+          <button class="lib-item" data-toast="Mock: klik di kanvas untuk menaruh (P1)"><img src="assets/svg/indoor-ducted.svg" alt="">Indoor ducted</button>
+          <button class="lib-item" data-toast="Mock: klik di kanvas untuk menaruh (P1)"><img src="assets/svg/outdoor.svg" alt="">Outdoor</button>
+        </div>
+      </details>
+    </div>
+    <p class="m-2 p-2.5 rounded-md bg-hazard/15 text-xs leading-snug">
+      <b>Tips:</b> pilih komponen, lalu klik ujung duct yang terbuka. Komponen akan menempel otomatis.
+    </p>
+  </aside>
+
+  <!-- ============ KANVAS ============ -->
+  <main class="relative flex-1 min-w-0 bg-cad overflow-hidden" aria-label="Kanvas gambar">
+    <svg id="cad" data-tool="select" class="absolute inset-0 w-full h-full select-none touch-none" viewBox="-220 -120 1760 1080" font-family="JetBrains Mono, monospace">
+      <defs>
+        <pattern id="g-minor" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M50 0H0V50" fill="none" stroke="#1c2127" stroke-width="1"/></pattern>
+        <pattern id="g-major" width="250" height="250" patternUnits="userSpaceOnUse"><rect width="250" height="250" fill="url(#g-minor)"/><path d="M250 0H0V250" fill="none" stroke="#262c34" stroke-width="1"/></pattern>
+        <path id="arr" d="M-9-6L9 0-9 6Z"/>
+      </defs>
+      <rect x="-4000" y="-4000" width="9000" height="9000" fill="url(#g-major)"/>
+
+      <!-- Denah (terkunci, pudar) -->
+      <g id="layer-denah" fill="#242930" stroke="#59616c" stroke-width="1">
+        <path fill-rule="evenodd" d="M0 0H1400V900H0ZM15 15V885H1385V15Z"/>
+        <rect x="900" y="15" width="15" height="365"/>
+        <rect x="900" y="470" width="15" height="230"/>
+        <rect x="900" y="780" width="15" height="105"/>
+        <rect x="915" y="550" width="470" height="15"/>
+        <rect x="1150" y="565" width="15" height="55"/>
+        <rect x="1150" y="700" width="15" height="185"/>
+        <g fill="none" stroke="#4a515b">
+          <path d="M915 470H1005A90 90 0 0 0 915 380"/>
+          <path d="M900 780H820A80 80 0 0 1 900 700"/>
+          <path d="M1165 700H1245A80 80 0 0 0 1165 620"/>
+        </g>
+        <g fill="#5d6570" stroke="none" font-size="18" letter-spacing="3">
+          <text x="50" y="860">KANTOR</text>
+          <text x="935" y="530">R. RAPAT</text>
+          <text x="935" y="860">PANTRY</text>
+          <text x="1185" y="860">TOILET</text>
+        </g>
+      </g>
+
+      <!-- Dimensi -->
+      <g id="layer-dim" fill="none" stroke="#7d8692" stroke-width="1">
+        <path d="M0-10V-75M900-10V-75M1400-10V-75M-15-60H1415M-8-52l16-16M892-52l16-16M1392-52l16-16"/>
+        <path d="M1410 0H1480M1410 550H1480M1410 900H1480M1465-15V915M1457 8l16-16M1457 558l16-16M1457 908l16-16"/>
+        <g fill="#9aa3ad" stroke="none" font-size="18" text-anchor="middle">
+          <text x="450" y="-68">9000</text>
+          <text x="1150" y="-68">5000</text>
+          <text x="1455" y="275" transform="rotate(-90 1455 275)">5500</text>
+          <text x="1455" y="725" transform="rotate(-90 1455 725)">3500</text>
+        </g>
+      </g>
+
+      <!-- Equipment -->
+      <g id="layer-eq" class="sys" fill="none" stroke="#4ade80" stroke-width="1.6">
+        <rect x="-185" y="105" width="125" height="90"/>
+        <circle cx="-140" cy="150" r="30"/>
+        <path d="M-161 129L-119 171M-119 129L-161 171M-95 115V185M-82 115V185M-69 115V185" stroke-width="1"/>
+        <path d="M-60 150H40" stroke-dasharray="10 6" stroke-width="1"/>
+        <rect x="40" y="105" width="160" height="90"/>
+        <path d="M60 105V195M72 105V195" stroke-width="1"/>
+        <rect x="1290" y="695" width="40" height="50"/>
+        <circle cx="1310" cy="720" r="15"/>
+        <path d="M1310 720V705M1310 720l13 7.5M1310 720l-13 7.5" stroke-width="1"/>
+        <g fill="#86efac" stroke="none" font-size="15" text-anchor="middle">
+          <text x="120" y="218">FCU-01 · 1300 cfm</text>
+          <text x="-122" y="218">ODU-01</text>
+          <text x="1310" y="766">EF-01</text>
+        </g>
+      </g>
+
+      <!-- Supply Air -->
+      <g id="layer-sa" class="sys" fill="none" stroke="#4ea1ff" stroke-width="1.6">
+        <path d="M200 120H470M200 180H285M315 180H470"/>
+        <path d="M200 114V186M470 114V186" stroke-width="1"/>
+        <path d="M285 180V320M315 180V320M279 320H321"/>
+        <path d="M470 120H550M470 180H495V210M525 210V180H550"/>
+        <path d="M489 210H531M550 114V186" stroke-width="1"/>
+        <path d="M495 210V400M525 210V400"/>
+        <path d="M550 120H760M550 180H690M710 180H760M690 180V195M710 180V195"/>
+        <path d="M686 195H714M760 114V186" stroke-width="1"/>
+        <path d="M690 195q-5 7.5 0 15t0 15t0 15t0 15t0 15t0 15t0 15t0 15t0 15t0 15t0 15t0 15t0 15t0 15M710 195q5 7.5 0 15t0 15t0 15t0 15t0 15t0 15t0 15t0 15t0 15t0 15t0 15t0 15t0 15t0 15" stroke-width="1.2"/>
+        <path d="M760 120L820 127.5M760 180L820 172.5"/>
+        <path d="M820 122V178" stroke-width="1"/>
+        <path d="M820 127.5H1040M820 172.5H1040"/>
+        <g id="E1">
+          <path d="M1040 127.5A70 70 0 0 1 1110 197.5M1040 172.5A25 25 0 0 1 1065 197.5"/>
+          <path d="M1040 122V178M1060 197.5H1115" stroke-width="1"/>
+          <rect x="1032" y="115" width="88" height="90" fill="transparent" stroke="none"/>
+        </g>
+        <path d="M1065 197.5V300M1110 197.5V300"/>
+        <path d="M1060 300H1115" stroke-width="1"/>
+        <path d="M1065 300V360M1110 300V315H1140M1140 345H1110V360"/>
+        <path d="M1060 360H1115M1140 310V350" stroke-width="1"/>
+        <path d="M1140 315H1250M1140 345H1250"/>
+        <path d="M1065 360V410H1110V360M1070 410V450M1105 410V450"/>
+        <g fill="#9cc8ff" stroke="none" font-size="15" text-anchor="middle">
+          <text x="335" y="106">24"x20"</text>
+          <text x="630" y="106">24"x20"</text>
+          <text x="960" y="116">18"x14"</text>
+          <text x="1055" y="240" text-anchor="end">18"x14"</text>
+          <text x="488" y="310" text-anchor="end">12"x10"</text>
+          <text x="278" y="270" text-anchor="end">12"x10"</text>
+          <text x="720" y="310" text-anchor="start">Ø8" flex</text>
+          <text x="1195" y="307">12"x10"</text>
+          <text x="1115" y="435" text-anchor="start">14"x12"</text>
+        </g>
+        <g fill="#4ea1ff" stroke="none">
+          <use href="#arr" transform="translate(380 150)"/>
+          <use href="#arr" transform="translate(600 150)"/>
+          <use href="#arr" transform="translate(985 150)"/>
+          <use href="#arr" transform="translate(1087.5 255) rotate(90)"/>
+          <use href="#arr" transform="translate(510 300) rotate(90)"/>
+          <use href="#arr" transform="translate(1200 330)"/>
+        </g>
+      </g>
+
+      <!-- Exhaust Air -->
+      <g id="layer-ea" class="sys" fill="none" stroke="#f472b6" stroke-width="1.6">
+        <path d="M1230 707.5H1290M1230 732.5H1290M1330 707.5H1382M1330 732.5H1382"/>
+        <text x="1260" y="698" fill="#f9a8d4" stroke="none" font-size="15" text-anchor="middle">10"x8"</text>
+        <use href="#arr" transform="translate(1258 720)" fill="#f472b6" stroke="none"/>
+      </g>
+
+      <!-- Diffuser, grille, louver -->
+      <g id="layer-diff" class="sys" fill="none" stroke="#22d3ee" stroke-width="1.4">
+        <path d="M480 400h60v60h-60zM480 400l60 60M540 400l-60 60"/>
+        <path d="M670 405h60v60h-60zM670 405l60 60M730 405l-60 60"/>
+        <path d="M1250 300h60v60h-60zM1250 300l60 60M1310 300l-60 60"/>
+        <path d="M1057.5 450h60v60h-60zM1057.5 450l60 60M1117.5 450l-60 60"/>
+        <path d="M1190 700h40v40h-40zM1190 710h40M1190 720h40M1190 730h40"/>
+        <path d="M1382 690h24v60h-24zM1382 698l24 10M1382 712l24 10M1382 726l24 10" stroke-width="1"/>
+        <g fill="#67e8f9" stroke="none" font-size="15">
+          <text x="550" y="452">350 cfm</text>
+          <text x="740" y="457">350 cfm</text>
+          <text x="1280" y="382" text-anchor="middle">300 cfm</text>
+          <text x="1127.5" y="492">300 cfm</text>
+          <text x="1210" y="762" text-anchor="middle">150 cfm</text>
+        </g>
+      </g>
+
+      <!-- Gantungan -->
+      <g id="layer-hanger" class="sys" fill="#14171b" stroke="#8b95a3" stroke-width="1">
+        <path d="M250 110V190M430 110V190M580 110V190M740 110V190M860 117V183M1010 117V183M1055 280H1120M485 330H535M1350 697V743"/>
+        <circle cx="250" cy="110" r="3.5"/><circle cx="250" cy="190" r="3.5"/>
+        <circle cx="430" cy="110" r="3.5"/><circle cx="430" cy="190" r="3.5"/>
+        <circle cx="580" cy="110" r="3.5"/><circle cx="580" cy="190" r="3.5"/>
+        <circle cx="740" cy="110" r="3.5"/><circle cx="740" cy="190" r="3.5"/>
+        <circle cx="860" cy="117" r="3.5"/><circle cx="860" cy="183" r="3.5"/>
+        <circle cx="1010" cy="117" r="3.5"/><circle cx="1010" cy="183" r="3.5"/>
+        <circle cx="1055" cy="280" r="3.5"/><circle cx="1120" cy="280" r="3.5"/>
+        <circle cx="485" cy="330" r="3.5"/><circle cx="535" cy="330" r="3.5"/>
+        <circle cx="1350" cy="697" r="3.5"/><circle cx="1350" cy="743" r="3.5"/>
+      </g>
+
+      <!-- Penanda warning -->
+      <g id="warn-markers" fill="none" stroke="#ef4444" pointer-events="none">
+        <g transform="translate(300 320)"><circle r="22" class="pulse"/><circle r="22" stroke-width="2"/><text y="8" text-anchor="middle" font-size="24" font-weight="700" fill="#ef4444" stroke="none">!</text></g>
+        <g transform="translate(1087.5 410)"><circle r="22" class="pulse"/><circle r="22" stroke-width="2"/><text y="8" text-anchor="middle" font-size="24" font-weight="700" fill="#ef4444" stroke="none">!</text></g>
+      </g>
+
+      <!-- Seleksi -->
+      <g id="sel" fill="none" pointer-events="none">
+        <rect x="1030" y="112" width="92" height="97" stroke="#facc15" stroke-dasharray="6 4"/>
+        <g fill="#3b82f6" stroke="#dbeafe"><rect x="1026" y="108" width="8" height="8"/><rect x="1118" y="108" width="8" height="8"/><rect x="1026" y="205" width="8" height="8"/><rect x="1118" y="205" width="8" height="8"/></g>
+        <g fill="#4ade80" stroke="#14171b"><circle cx="1040" cy="150" r="6"/><circle cx="1087.5" cy="197.5" r="6"/></g>
+        <text x="1128" y="108" fill="#facc15" font-size="14">E-03 · Elbow 90° · 18"x14"</text>
+      </g>
+
+      <!-- Crosshair ala AutoCAD -->
+      <g id="xhair" stroke="#cbd5e1" stroke-opacity=".45" fill="none" pointer-events="none" style="display:none">
+        <line id="xh-h" x1="-5000" x2="5000"/><line id="xh-v" y1="-5000" y2="5000"/><rect id="xh-box"/>
+      </g>
+    </svg>
+
+    <!-- Penanda sumbu (UCS) -->
+    <svg class="absolute left-3 bottom-3 w-11 h-11 pointer-events-none" viewBox="0 0 48 48" fill="none" stroke="#7d8692" stroke-width="1.5" aria-hidden="true">
+      <path d="M8 40V8M8 40H40M4 13l4-6 4 6M35 36l6 4-6 4"/><text x="14" y="12" fill="#7d8692" stroke="none" font-size="10" font-family="monospace">Y</text><text x="36" y="32" fill="#7d8692" stroke="none" font-size="10" font-family="monospace">X</text>
+    </svg>
+
+    <!-- Bar state demo (khusus mock) -->
+    <div class="absolute top-3 left-1/2 -translate-x-1/2 z-10 max-w-[calc(100%-1.5rem)] overflow-x-auto rounded-md">
+      <div class="demo-bar flex items-center gap-0.5 p-1 rounded-md bg-ink/90 ring-1 ring-hazard/70 text-xs whitespace-nowrap">
+        <span class="px-2 font-cond font-bold tracking-widest text-hazard">DEMO</span>
+        <button data-state="normal">Normal</button>
+        <button data-state="kosong">Kosong</button>
+        <button data-state="terpilih">Terpilih</button>
+        <button data-state="warning">Warning</button>
+        <button data-state="zoom">Zoom dekat</button>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div id="empty-hint" class="absolute inset-0 items-center justify-center p-6 pointer-events-none">
+      <div class="pointer-events-auto max-w-sm w-full bg-panel rounded-xl shadow-2xl p-5">
+        <div class="field-label">Proyek kosong</div>
+        <h2 class="font-cond font-bold text-2xl leading-tight">Ruangan <span id="room-size">14 × 9 m</span> siap. Mulai rangkai duct.</h2>
+        <ol class="mt-4 space-y-3">
+          <li class="flex gap-3"><span class="shrink-0 grid place-items-center w-6 h-6 rounded-full bg-hazard font-bold text-xs">1</span><span>Taruh <b>Indoor ducted</b> (FCU/AHU) dari Library.</span></li>
+          <li class="flex gap-3"><span class="shrink-0 grid place-items-center w-6 h-6 rounded-full bg-hazard font-bold text-xs">2</span><span>Pilih tool <b>Duct</b> <kbd class="font-mono text-xs px-1 rounded bg-black/10">D</kbd>, tarik dari ujung unit. Ukuran bisa diubah nanti.</span></li>
+          <li class="flex gap-3"><span class="shrink-0 grid place-items-center w-6 h-6 rounded-full bg-hazard font-bold text-xs">3</span><span>Pasang <b>diffuser</b> di ujung tiap cabang, isi debitnya.</span></li>
+        </ol>
+        <div class="mt-5 flex flex-wrap gap-2">
+          <button class="btn-primary" data-toast="Mock: klik di kanvas untuk menaruh FCU (P1)">Taruh FCU</button>
+          <button class="btn-ghost" data-state="normal">Lihat contoh gambar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel warning -->
+    <section id="warn-drawer" class="absolute left-3 right-3 bottom-3 sm:left-auto sm:w-96 z-10 bg-panel rounded-xl shadow-2xl overflow-hidden" aria-label="Warning validasi">
+      <header class="flex items-center gap-2 px-4 py-2.5 border-b border-line">
+        <span class="w-2 h-2 rounded-full bg-red-500"></span>
+        <b class="font-cond text-base tracking-wide">2 WARNING</b>
+        <span class="text-muted text-xs">tidak menghalangi simpan / export</span>
+        <button id="warn-close" class="ml-auto w-7 h-7 grid place-items-center rounded hover:bg-black/5" aria-label="Tutup">✕</button>
+      </header>
+      <ul class="divide-y divide-line">
+        <li><button class="warn-item" data-vb="150 210 300 200">
+          <span class="shrink-0 grid place-items-center w-6 h-6 rounded-full bg-red-100 text-red-700 font-bold">!</span>
+          <span class="flex-1"><b class="block">Ujung duct terbuka</b><span class="block text-muted text-xs mt-0.5">Cabang 12"x10" di Kantor belum tersambung ke diffuser atau end cap.</span><span class="block font-mono text-[11px] text-muted mt-1">X 3000 · Y 5800</span></span>
+          <span class="text-xs font-semibold self-center">Lihat →</span>
+        </button></li>
+        <li><button class="warn-item" data-vb="940 320 300 200">
+          <span class="shrink-0 grid place-items-center w-6 h-6 rounded-full bg-red-100 text-red-700 font-bold">!</span>
+          <span class="flex-1"><b class="block">Ukuran beda tanpa transisi</b><span class="block text-muted text-xs mt-0.5">18"x14" langsung ke 14"x12" di R. Rapat. Tambah fitting transisi.</span><span class="block font-mono text-[11px] text-muted mt-1">X 10875 · Y 4900</span></span>
+          <span class="text-xs font-semibold self-center">Lihat →</span>
+        </button></li>
+      </ul>
+    </section>
+  </main>
+
+  <!-- ============ PANEL KANAN ============ -->
+  <aside id="side" class="w-72 shrink-0 flex flex-col bg-panel border-l border-line overflow-y-auto">
+    <section class="p-4 border-b border-line">
+      <h3 class="field-label !text-ink !text-xs mb-3">Properti</h3>
+
+      <div id="props-off">
+        <p class="text-muted leading-relaxed">Belum ada yang dipilih. Klik komponen di kanvas untuk ubah ukuran, sistem, atau debit.</p>
+        <dl class="mt-4 grid grid-cols-2 gap-y-2 text-xs">
+          <dt class="text-muted">Satuan duct</dt><dd class="unit font-mono text-right">inch</dd>
+          <dt class="text-muted">Skala</dt><dd class="scale font-mono text-right">1:100</dd>
+          <dt class="sys-info text-muted">Sistem</dt><dd class="sys-info font-mono text-right">SA · EA</dd>
+          <dt class="sys-info text-muted">Total debit SA</dt><dd class="sys-info font-mono text-right">1300 cfm</dd>
+        </dl>
+      </div>
+
+      <div id="props-on" class="space-y-4">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-lg bg-white ring-1 ring-line grid place-items-center"><img src="assets/svg/elbow-90.svg" alt="" class="w-8 h-8"></div>
+          <div class="mr-auto"><div class="font-semibold">Elbow 90°</div><div class="font-mono text-xs text-muted">E-03 · radius</div></div>
+          <span class="px-1.5 py-0.5 rounded font-mono text-xs font-medium bg-blue-100 text-blue-800">SA</span>
+        </div>
+        <div>
+          <span class="field-label">Sistem</span>
+          <div class="seg"><label><input type="radio" name="sys" checked>Supply (SA)</label><label><input type="radio" name="sys">Exhaust (EA)</label></div>
+        </div>
+        <div>
+          <span class="field-label">Ukuran (<span class="unit">inch</span>)</span>
+          <div class="flex items-center gap-2">
+            <div class="field-unit flex-1"><input value="18" aria-label="Lebar"><span>W</span></div>
+            <span class="text-muted">×</span>
+            <div class="field-unit flex-1"><input value="14" aria-label="Tinggi"><span>H</span></div>
+          </div>
+          <p class="hint">Label di gambar: <span class="font-mono text-ink">18"x14"</span></p>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><span class="field-label">Debit</span><div class="field-unit"><input value="600" aria-label="Debit"><span>cfm</span></div></div>
+          <div><span class="field-label">Elevasi dasar</span><div class="field-unit"><input value="2700" aria-label="Elevasi dasar duct"><span>mm</span></div></div>
+        </div>
+        <div>
+          <span class="field-label">Rotasi</span>
+          <div class="flex gap-2">
+            <button class="btn-ghost !px-2.5" data-rot="-90" title="Putar kiri 90°">⟲</button>
+            <div class="field-unit flex-1"><input id="rot" value="90" aria-label="Rotasi"><span>°</span></div>
+            <button class="btn-ghost !px-2.5" data-rot="90" title="Putar kanan 90°">⟳</button>
+          </div>
+        </div>
+        <div>
+          <span class="field-label">Sambungan</span>
+          <ul class="space-y-1 text-xs">
+            <li class="flex items-center gap-2 rounded-md bg-white ring-1 ring-line px-2 py-1.5"><span class="w-2 h-2 rounded-full bg-green-500"></span><b class="font-mono">a</b><span class="text-muted">dari duct 18"x14"</span><span class="ml-auto text-green-700 font-medium">nyambung</span></li>
+            <li class="flex items-center gap-2 rounded-md bg-white ring-1 ring-line px-2 py-1.5"><span class="w-2 h-2 rounded-full bg-green-500"></span><b class="font-mono">b</b><span class="text-muted">ke duct 18"x14"</span><span class="ml-auto text-green-700 font-medium">nyambung</span></li>
+          </ul>
+        </div>
+        <div class="flex gap-2">
+          <button class="btn-ghost flex-1" data-toast="Mock: duplikat aktif di P1">Duplikat</button>
+          <button class="btn-ghost flex-1 !text-red-700" data-toast="Mock: hapus aktif di P1">Hapus</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="p-4">
+      <h3 class="field-label !text-ink !text-xs mb-2">Layer</h3>
+      <ul class="space-y-0.5">
+        <li><label class="layer-row"><input type="checkbox" data-layer="sa" checked><span class="sw" style="background:#4ea1ff"></span><span class="flex-1">Supply Air (SA)</span><span class="font-mono text-[10px] text-muted">DUCT-SA</span></label></li>
+        <li><label class="layer-row"><input type="checkbox" data-layer="ea" checked><span class="sw" style="background:#f472b6"></span><span class="flex-1">Exhaust Air (EA)</span><span class="font-mono text-[10px] text-muted">DUCT-EA</span></label></li>
+        <li><label class="layer-row"><input type="checkbox" data-layer="eq" checked><span class="sw" style="background:#4ade80"></span><span class="flex-1">Equipment</span><span class="font-mono text-[10px] text-muted">EQUIPMENT</span></label></li>
+        <li><label class="layer-row"><input type="checkbox" data-layer="diff" checked><span class="sw" style="background:#22d3ee"></span><span class="flex-1">Diffuser &amp; grille</span><span class="font-mono text-[10px] text-muted">DIFFUSER</span></label></li>
+        <li><label class="layer-row"><input type="checkbox" data-layer="hanger" checked><span class="sw" style="background:#8b95a3"></span><span class="flex-1">Gantungan</span><span class="font-mono text-[10px] text-muted">HANGER</span></label></li>
+        <li><label class="layer-row"><input type="checkbox" data-layer="dim" checked><span class="sw" style="background:#7d8692"></span><span class="flex-1">Dimensi</span><span class="font-mono text-[10px] text-muted">DIMENSION</span></label></li>
+        <li><label class="layer-row"><input type="checkbox" data-layer="denah" checked><span class="sw" style="background:#59616c"></span><span class="flex-1">Denah</span>
+          <span class="inline-flex items-center gap-1 text-[10px] text-muted" title="Terkunci: tidak bisa diedit"><svg viewBox="0 0 24 24" class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="11" width="14" height="10" rx="1"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>kunci</span></label></li>
+      </ul>
+    </section>
+  </aside>
+</div>
+<div id="scrim"></div>
+
+<!-- ============ STATUS BAR ============ -->
+<footer class="h-8 shrink-0 flex items-center gap-4 px-3 bg-ink text-white/60 text-xs font-mono whitespace-nowrap overflow-x-auto">
+  <span id="coord" class="w-36 text-white/85">X 0  Y 0</span>
+  <button id="zoom-fit" class="hover:text-white" title="Klik untuk lihat semua">Zoom <b id="zoom" class="text-white">100%</b></button>
+  <span class="hidden sm:inline">Satuan <b class="unit text-white">inch</b></span>
+  <span class="hidden sm:inline">Skala <b class="scale text-white">1:100</b></span>
+  <button id="snap" aria-pressed="true" class="hover:text-white">Snap <b class="text-hazard">ON</b></button>
+  <span class="hidden md:inline">Tool <b id="tool-name" class="text-white">Select</b></span>
+  <button id="warn-btn" class="ml-auto inline-flex items-center gap-1.5 text-red-300 hover:text-red-200"><span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>2 warning</button>
+  <span class="text-hazard font-bold">MOCK</span>
+</footer>
+
+<!-- ============ DIALOG EXPORT ============ -->
+<dialog id="dlg-export" class="dlg w-[min(560px,calc(100vw-2rem))]" aria-labelledby="dlg-export-title">
+  <form id="form-export" method="dialog" class="flex flex-col max-h-[85vh]">
+    <header class="px-6 pt-6 pb-2">
+      <h2 id="dlg-export-title" class="font-cond font-bold text-2xl">Export gambar</h2>
+      <p class="text-sm text-muted mt-0.5">Hasil export adalah sketsa bantu. Cek ulang ukuran di lapangan.</p>
+    </header>
+    <div class="px-6 py-4 space-y-5 overflow-y-auto">
+      <fieldset>
+        <legend class="field-label">Format</legend>
+        <div class="grid grid-cols-3 gap-2">
+          <label class="opt"><input type="radio" name="fmt" value="dxf" checked><b>DXF</b><span class="text-xs text-muted leading-snug">Buka di AutoCAD, layer ikut.</span><span class="mt-1 self-start text-[10px] font-bold uppercase tracking-wider bg-hazard px-1.5 rounded">Disarankan</span></label>
+          <label class="opt"><input type="radio" name="fmt" value="png"><b>PNG</b><span class="text-xs text-muted leading-snug">Gambar untuk dikirim lewat chat.</span></label>
+          <label class="opt"><input type="radio" name="fmt" value="pdf"><b>PDF</b><span class="text-xs text-muted leading-snug">Untuk dicetak.</span></label>
+        </div>
+      </fieldset>
+      <div class="grid grid-cols-2 gap-3">
+        <label><span class="field-label">Skala</span><select class="field"><option>1:50</option><option selected>1:100</option><option>1:200</option></select></label>
+        <label><span class="field-label">Satuan file</span><select class="field"><option>mm</option><option>inch</option></select></label>
+      </div>
+      <fieldset>
+        <legend class="field-label">Layer yang ikut</legend>
+        <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
+          <label class="flex items-center gap-2"><input type="checkbox" checked class="accent-ink"><span class="font-mono text-xs">DUCT-SA</span></label>
+          <label class="flex items-center gap-2"><input type="checkbox" checked class="accent-ink"><span class="font-mono text-xs">DUCT-EA</span></label>
+          <label class="flex items-center gap-2"><input type="checkbox" checked class="accent-ink"><span class="font-mono text-xs">EQUIPMENT</span></label>
+          <label class="flex items-center gap-2"><input type="checkbox" checked class="accent-ink"><span class="font-mono text-xs">DIFFUSER</span></label>
+          <label class="flex items-center gap-2"><input type="checkbox" checked class="accent-ink"><span class="font-mono text-xs">HANGER</span></label>
+          <label class="flex items-center gap-2"><input type="checkbox" checked class="accent-ink"><span class="font-mono text-xs">DIMENSION</span></label>
+          <label class="flex items-center gap-2"><input type="checkbox" checked class="accent-ink"><span class="font-mono text-xs">TEXT</span></label>
+          <label class="flex items-center gap-2"><input type="checkbox" checked class="accent-ink"><span class="font-mono text-xs">ARCH</span> <span class="text-xs text-muted">(denah)</span></label>
+        </div>
+      </fieldset>
+      <label class="flex items-start gap-2"><input type="checkbox" checked class="accent-ink mt-1"><span>Tulis catatan di gambar: <i>"Sketsa bantu – cek ulang di lapangan"</i></span></label>
+      <div class="flex gap-2 rounded-lg bg-red-50 ring-1 ring-red-200 p-3 text-xs text-red-900"><b>!</b><span>Masih ada 2 warning. Export tetap bisa, tapi sebaiknya dicek dulu.</span></div>
+    </div>
+    <footer class="flex items-center gap-2 px-6 py-4 border-t border-line bg-paper rounded-b-xl">
+      <span id="exp-file" class="font-mono text-xs text-muted truncate">kantor-lt-2.dxf</span>
+      <button value="cancel" class="ml-auto btn-ghost">Batal</button>
+      <button value="ok" class="btn-primary" data-toast="Mock: export belum aktif (P2)">Export</button>
+    </footer>
+  </form>
+</dialog>
+
+</body>
+</html>

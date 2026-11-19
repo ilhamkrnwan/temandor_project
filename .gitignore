@@ -1,0 +1,42 @@
+# AI agents, skills, and local tool state
+.claude/
+.impeccable/
+.agents/
+.agent/
+.skills/
+skills/
+.cursor/
+.gemini/
+.codex/
+.windsurf/
+.opencode/
+CLAUDE.md
+AGENTS.md
+
+# Local screenshots & scratch files
+.shots/
+.shots*
+tmp/
+temp/
+
+# Dependencies & environments
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+.env
+.env.*
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+*~

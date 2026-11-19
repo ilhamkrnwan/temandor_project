@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Proyek · Temandor (MOCK)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="js/mock.js"></script>
+<link rel="stylesheet" href="css/mock.css">
+</head>
+<body class="min-h-dvh flex flex-col bg-paper text-ink font-sans text-[15px]">
+
+<header class="relative bg-panel border-b border-line">
+  <div class="tape absolute inset-x-0 top-0 h-[3px]"></div>
+  <div class="max-w-6xl mx-auto h-14 px-4 flex items-center gap-3">
+    <a href="index.html" class="flex items-center gap-2">
+      <span class="grid place-items-center w-8 h-8 rounded bg-ink"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="#f2c200" stroke-width="2.2"><path d="M3 6h7a8 8 0 0 1 8 8v7M3 12h7a2 2 0 0 1 2 2v7"/></svg></span>
+      <span class="font-cond font-bold text-xl tracking-wide">TEMANDOR</span>
+    </a>
+    <span class="hidden sm:block text-muted text-sm border-l border-line pl-3">Sketsa ducting &amp; ventilasi</span>
+    <span class="mock-badge ml-auto">MOCK · P0</span>
+  </div>
+</header>
+
+<main class="flex-1 max-w-6xl w-full mx-auto px-4 py-8 sm:py-10">
+  <div class="flex flex-wrap items-end gap-4">
+    <div class="mr-auto">
+      <h1 class="font-cond font-bold text-4xl sm:text-5xl leading-none">Proyek</h1>
+      <p class="mt-2 text-muted">Gambar denah, rangkai komponen duct, export ke DXF untuk AutoCAD.</p>
+    </div>
+    <label class="btn-ghost cursor-pointer">
+      <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h16M12 4v12m-5-5 5 5 5-5"/></svg>
+      Buka file .json
+      <input id="open-file" type="file" accept=".json,application/json" class="sr-only">
+    </label>
+    <button class="btn-primary" data-open="dlg-new">
+      <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      Proyek baru
+    </button>
+  </div>
+
+  <div id="toolbar" class="mt-8 flex items-center gap-3">
+    <div class="relative flex-1 max-w-sm">
+      <svg viewBox="0 0 24 24" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+      <input id="search" type="search" placeholder="Cari nama proyek…" class="field pl-9" aria-label="Cari proyek">
+    </div>
+    <span class="text-sm text-muted">4 proyek · disimpan di perangkat ini</span>
+  </div>
+
+  <!-- Daftar proyek -->
+  <div id="projects" class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <a href="editor.html" data-name="Kantor Lt. 2 – Ducting" class="card group block bg-panel rounded-xl ring-1 ring-line hover:ring-ink overflow-hidden transition">
+      <div class="card-thumb h-40 bg-cad overflow-hidden"><img src="assets/thumb-denah.svg" alt="" class="w-full h-full object-cover origin-top-left"></div>
+      <div class="p-4">
+        <div class="flex items-start gap-2">
+          <h2 class="font-semibold leading-snug mr-auto">Kantor Lt. 2 – Ducting</h2>
+          <span class="shrink-0 inline-flex items-center gap-1 text-xs font-semibold text-red-700 bg-red-50 ring-1 ring-red-200 rounded px-1.5 py-0.5">2 warning</span>
+        </div>
+        <div class="mt-2 flex items-center gap-1.5 text-xs">
+          <span class="px-1.5 py-0.5 rounded font-mono font-medium bg-blue-100 text-blue-800">SA</span>
+          <span class="px-1.5 py-0.5 rounded font-mono font-medium bg-pink-100 text-pink-800">EA</span>
+          <span class="font-mono text-muted ml-1">inch · 1:100</span>
+        </div>
+        <p class="mt-3 text-xs text-muted">Diubah 2 jam lalu</p>
+      </div>
+    </a>
+    <a href="editor.html" data-name="Ruko Jl. Sudirman 14" class="card group block bg-panel rounded-xl ring-1 ring-line hover:ring-ink overflow-hidden transition">
+      <div class="card-thumb h-40 bg-cad overflow-hidden"><img src="assets/thumb-denah.svg" alt="" class="w-full h-full object-cover origin-bottom-right"></div>
+      <div class="p-4">
+        <div class="flex items-start gap-2">
+          <h2 class="font-semibold leading-snug mr-auto">Ruko Jl. Sudirman 14</h2>
+          <span class="shrink-0 text-xs font-semibold text-green-800 bg-green-50 ring-1 ring-green-200 rounded px-1.5 py-0.5">Aman</span>
+        </div>
+        <div class="mt-2 flex items-center gap-1.5 text-xs">
+          <span class="px-1.5 py-0.5 rounded font-mono font-medium bg-blue-100 text-blue-800">SA</span>
+          <span class="font-mono text-muted ml-1">mm · 1:50</span>
+        </div>
+        <p class="mt-3 text-xs text-muted">Diubah kemarin</p>
+      </div>
+    </a>
+    <a href="editor.html" data-name="Gudang B – Exhaust" class="card group block bg-panel rounded-xl ring-1 ring-line hover:ring-ink overflow-hidden transition">
+      <div class="card-thumb h-40 bg-cad overflow-hidden"><img src="assets/thumb-denah.svg" alt="" class="w-full h-full object-cover origin-top-right"></div>
+      <div class="p-4">
+        <div class="flex items-start gap-2">
+          <h2 class="font-semibold leading-snug mr-auto">Gudang B – Exhaust</h2>
+          <span class="shrink-0 text-xs font-semibold text-red-700 bg-red-50 ring-1 ring-red-200 rounded px-1.5 py-0.5">1 warning</span>
+        </div>
+        <div class="mt-2 flex items-center gap-1.5 text-xs">
+          <span class="px-1.5 py-0.5 rounded font-mono font-medium bg-pink-100 text-pink-800">EA</span>
+          <span class="font-mono text-muted ml-1">mm · 1:200</span>
+        </div>
+        <p class="mt-3 text-xs text-muted">Diubah 3 hari lalu</p>
+      </div>
+    </a>
+    <a href="editor.html" data-name="Klinik Pratama – R. Tunggu" class="card group block bg-panel rounded-xl ring-1 ring-line hover:ring-ink overflow-hidden transition">
+      <div class="card-thumb h-40 bg-cad overflow-hidden"><img src="assets/thumb-denah.svg" alt="" class="w-full h-full object-cover origin-bottom-left"></div>
+      <div class="p-4">
+        <div class="flex items-start gap-2">
+          <h2 class="font-semibold leading-snug mr-auto">Klinik Pratama – R. Tunggu</h2>
+          <span class="shrink-0 text-xs font-semibold text-green-800 bg-green-50 ring-1 ring-green-200 rounded px-1.5 py-0.5">Aman</span>
+        </div>
+        <div class="mt-2 flex items-center gap-1.5 text-xs">
+          <span class="px-1.5 py-0.5 rounded font-mono font-medium bg-blue-100 text-blue-800">SA</span>
+          <span class="px-1.5 py-0.5 rounded font-mono font-medium bg-pink-100 text-pink-800">EA</span>
+          <span class="font-mono text-muted ml-1">inch · 1:100</span>
+        </div>
+        <p class="mt-3 text-xs text-muted">Diubah 12 Nov 2026</p>
+      </div>
+    </a>
+    <button data-open="dlg-new" class="min-h-[15rem] rounded-xl border-2 border-dashed border-line hover:border-ink text-muted hover:text-ink grid place-items-center transition">
+      <span class="flex flex-col items-center gap-2">
+        <svg viewBox="0 0 24 24" class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>
+        <span class="font-semibold">Proyek baru</span>
+      </span>
+    </button>
+  </div>
+
+  <!-- Empty state -->
+  <section id="home-empty" class="mt-8 rounded-2xl bg-panel ring-1 ring-line overflow-hidden">
+    <div class="grid md:grid-cols-[1.1fr_1fr]">
+      <div class="p-8 sm:p-10">
+        <p class="font-cond font-bold tracking-widest text-xs text-muted uppercase">Belum ada proyek</p>
+        <h2 class="mt-2 font-cond font-bold text-3xl sm:text-4xl leading-tight">Gambar jalur duct tanpa harus jago AutoCAD.</h2>
+        <p class="mt-3 text-muted max-w-md">Tinggal isi ukuran ruangan, lalu rangkai komponen seperti di lapangan: duct, elbow, T, diffuser. Ujungnya otomatis nyambung.</p>
+        <button class="btn-primary mt-6 h-10 px-5 text-[15px]" data-open="dlg-new">Buat proyek pertama</button>
+      </div>
+      <ol class="bg-cad text-white/80 p-8 sm:p-10 space-y-6">
+        <li class="flex gap-4"><span class="shrink-0 grid place-items-center w-8 h-8 rounded-full bg-hazard text-ink font-bold">1</span><div><b class="text-white">Isi ukuran ruangan</b><p class="text-sm text-white/60">Panjang × lebar dalam meter.</p></div></li>
+        <li class="flex gap-4"><span class="shrink-0 grid place-items-center w-8 h-8 rounded-full bg-hazard text-ink font-bold">2</span><div><b class="text-white">Rangkai duct dari komponen</b><p class="text-sm text-white/60">Pilih dari library, tempel ke ujung yang terbuka.</p></div></li>
+        <li class="flex gap-4"><span class="shrink-0 grid place-items-center w-8 h-8 rounded-full bg-hazard text-ink font-bold">3</span><div><b class="text-white">Export ke DXF</b><p class="text-sm text-white/60">Kirim ke drafter atau buka sendiri di AutoCAD.</p></div></li>
+      </ol>
+    </div>
+  </section>
+</main>
+
+<footer class="border-t border-line">
+  <div class="max-w-6xl mx-auto px-4 h-12 flex items-center gap-4 text-xs text-muted">
+    <span>Temandor · mock P0, bukan aplikasi jadi</span>
+    <label class="ml-auto inline-flex items-center gap-2 cursor-pointer select-none rounded px-2 py-1 border border-dashed border-ink/40 bg-hazard/20 text-ink">
+      <input id="demo-empty" type="checkbox" class="accent-ink"> Demo: beranda kosong
+    </label>
+  </div>
+</footer>
+
+<!-- Dialog Proyek Baru -->
+<dialog id="dlg-new" class="dlg w-[min(520px,calc(100vw-2rem))]" aria-labelledby="dlg-new-title">
+  <form id="form-new" action="editor.html" method="get">
+    <input type="hidden" name="baru" value="1">
+    <header class="px-6 pt-6">
+      <h2 id="dlg-new-title" class="font-cond font-bold text-2xl">Proyek baru</h2>
+      <p class="text-sm text-muted mt-0.5">Semua bisa diubah lagi nanti.</p>
+    </header>
+    <div class="px-6 py-5 space-y-5">
+      <div>
+        <label class="field-label" for="nama">Nama proyek</label>
+        <input id="nama" name="nama" required class="field" placeholder="mis. Kantor Lt. 2 – Ducting" autocomplete="off">
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <span class="field-label">Satuan duct</span>
+          <div class="seg">
+            <label><input type="radio" name="satuan" value="inch" checked>inch</label>
+            <label><input type="radio" name="satuan" value="mm">mm</label>
+          </div>
+          <p class="hint">Label: <span id="unit-eg" class="font-mono text-ink">24"x20"</span></p>
+        </div>
+        <div>
+          <label class="field-label" for="skala">Skala gambar</label>
+          <select id="skala" name="skala" class="field">
+            <option>1:50</option><option selected>1:100</option><option>1:200</option>
+          </select>
+          <p class="hint">Dipakai saat export.</p>
+        </div>
+      </div>
+      <div>
+        <span class="field-label">Ruangan awal</span>
+        <div class="grid grid-cols-[1fr_1fr_auto] gap-3 items-start">
+          <div class="field-unit"><input name="p" type="number" min="1" max="200" step="0.1" value="9" aria-label="Panjang"><span>m</span></div>
+          <div class="field-unit"><input name="l" type="number" min="1" max="200" step="0.1" value="6" aria-label="Lebar"><span>m</span></div>
+          <svg viewBox="0 0 220 124" class="row-span-2 w-28 h-16 rounded bg-cad" aria-hidden="true">
+            <rect id="prev-room" fill="#262b32" stroke="#9aa3ad" stroke-width="2"/>
+            <text id="prev-dim" x="110" y="68" fill="#e5e7eb" font-size="20" font-family="JetBrains Mono, monospace" text-anchor="middle"></text>
+          </svg>
+          <p class="hint col-span-2 -mt-1">Panjang × lebar. Bentuk lain bisa digambar di editor.</p>
+        </div>
+      </div>
+    </div>
+    <footer class="flex justify-end gap-2 px-6 py-4 border-t border-line bg-paper rounded-b-xl">
+      <button type="button" class="btn-ghost" data-close>Batal</button>
+      <button class="btn-primary">Buat proyek →</button>
+    </footer>
+  </form>
+</dialog>
+
+</body>
+</html>

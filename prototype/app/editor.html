@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Editor · Temandor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="js/ui.js"></script>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body class="h-dvh flex flex-col overflow-hidden bg-paper text-ink font-sans text-sm">
+
+<!-- ============ TOP BAR ============ -->
+<header class="relative h-12 shrink-0 flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 bg-panel border-b border-line">
+  <div class="tape absolute inset-x-0 top-0 h-[3px]"></div>
+  <a href="index.html" class="flex items-center gap-2 pr-2 sm:pr-3 sm:border-r border-line" title="Kembali ke daftar proyek">
+    <span class="grid place-items-center w-7 h-7 rounded bg-ink"><svg viewBox="0 0 24 24" class="w-[18px] h-[18px]" fill="none" stroke="#f2c200" stroke-width="2.2"><path d="M3 6h7a8 8 0 0 1 8 8v7M3 12h7a2 2 0 0 1 2 2v7"/></svg></span>
+    <span class="hidden md:block font-cond font-bold text-lg tracking-wide">TEMANDOR</span>
+  </a>
+  <input id="proj-name" aria-label="Nama proyek" class="min-w-0 flex-1 sm:flex-none sm:w-56 bg-transparent font-semibold px-2 py-1 rounded hover:bg-black/5 focus:bg-white focus:outline-none focus:ring-2 focus:ring-hazard">
+  <span id="saved" class="hidden xl:inline text-muted text-xs">Tersimpan di browser</span>
+  <div class="hidden sm:flex items-center ml-1">
+    <button id="undo" class="tool !text-ink/70 hover:!bg-black/5 disabled:opacity-30" title="Undo (Ctrl+Z)"><svg viewBox="0 0 24 24" class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button>
+    <button id="redo" class="tool !text-ink/70 hover:!bg-black/5 disabled:opacity-30" title="Redo (Ctrl+Y)"><svg viewBox="0 0 24 24" class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 14 5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg></button>
+  </div>
+  <div class="ml-auto flex items-center gap-1.5">
+    <button data-drawer="side" class="lg:hidden btn-ghost !px-2.5">Properti</button>
+    <button id="focus" class="hidden lg:grid tool !text-ink/70 hover:!bg-black/5 aria-pressed:!bg-hazard aria-pressed:!text-ink" title="Mode fokus: tutup semua panel (Tab)" aria-label="Mode fokus"><svg viewBox="0 0 24 24" class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+    <button id="theme" class="tool !text-ink/70 hover:!bg-black/5" title="Kanvas gelap / terang" aria-label="Ganti tema kanvas"><svg viewBox="0 0 24 24" class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg></button>
+    <a href="docs.html#dukung" target="_blank" class="hidden xl:inline-flex btn-ghost !px-2.5" title="Temandor gratis & open source. Dukung pengembangannya."><span class="text-red-600">♥</span> Dukung</a>
+    <button class="hidden sm:inline-flex btn-ghost !px-0 w-8" data-open="dlg-keys" title="Pintasan keyboard (?)" aria-label="Pintasan keyboard">?</button>
+    <button id="save" class="hidden sm:inline-flex btn-ghost" title="Simpan (Ctrl+S)">Simpan</button>
+    <button class="btn-primary" data-open="dlg-export">Export</button>
+    <span class="mock-badge hidden md:inline-flex">PROTOTYPE · P1</span>
+  </div>
+</header>
+
+<div class="flex-1 flex min-h-0 overflow-hidden">
+
+  <!-- ============ RAIL (seperti Canva): kategori → buka panel ============ -->
+  <nav id="rail" aria-label="Menu panel">
+    <button class="rail-btn" data-cat="elemen" title="Komponen: ruangan, arsitektur, duct, equipment" aria-pressed="false"><svg viewBox="0 0 24 24" class="w-[22px] h-[22px]" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><circle cx="17" cy="7" r="3.5"/><path d="M7 13.5l3.8 6.5H3.2zM13.5 13.5h7v7h-7z"/></svg><span>Elemen</span></button>
+    <button class="rail-btn" data-cat="alat" title="Alat gambar: duct, ruangan bebas, partisi, ukur, coretan" aria-pressed="false"><svg viewBox="0 0 24 24" class="w-[22px] h-[22px]" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19z"/><path d="M14.5 6.5l3 3"/></svg><span>Alat</span></button>
+    <button class="rail-btn" data-cat="teks" title="Teks & catatan" aria-pressed="false"><svg viewBox="0 0 24 24" class="w-[22px] h-[22px]" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M5 7V5h14v2M12 5v14M9 19h6"/></svg><span>Teks</span></button>
+    <button class="rail-btn" data-cat="ai" title="Asisten AI: minta digambarkan, diubah, atau dicek" aria-pressed="false"><svg viewBox="0 0 24 24" class="w-[22px] h-[22px]" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z"/></svg><span>AI</span></button>
+    <button class="rail-btn" data-cat="layer" title="Layer: tampil/sembunyi, kunci" aria-pressed="false"><svg viewBox="0 0 24 24" class="w-[22px] h-[22px]" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg><span>Layer</span></button>
+    <button class="rail-btn" data-cat="proyek" title="Pengaturan proyek: skala, gantungan" aria-pressed="false"><svg viewBox="0 0 24 24" class="w-[22px] h-[22px]" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M4 6a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/></svg><span>Proyek</span></button>
+  </nav>
+
+  <!-- ============ PANEL KIRI (isi sesuai kategori rail) ============ -->
+  <aside id="lib" class="w-72 shrink-0 flex flex-col bg-panel border-r border-line" aria-label="Panel">
+    <section class="pane" data-pane="elemen">
+      <div class="p-3 border-b border-line"><input id="lib-search" type="search" placeholder="Cari: elbow, pintu, diffuser…" class="field" aria-label="Cari komponen"></div>
+      <div id="lib-groups" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
+    </section>
+    <section class="pane" data-pane="alat">
+      <h2 class="pane-title">Alat gambar</h2>
+      <div id="tool-list" class="flex-1 overflow-y-auto px-3 pb-3 space-y-1.5"></div>
+    </section>
+    <section class="pane" data-pane="teks">
+      <h2 class="pane-title">Teks</h2>
+      <div class="flex-1 overflow-y-auto px-3 pb-3 space-y-2">
+        <button class="text-preset text-2xl font-bold" data-text="2">Tambah judul</button>
+        <button class="text-preset text-lg font-semibold" data-text="1.4">Tambah subjudul</button>
+        <button class="text-preset text-sm" data-text="1">Tambah teks biasa</button>
+        <p class="hint !mt-3">Teks langsung muncul di tengah layar, tinggal ketik. Klik ganda teks untuk mengubahnya.</p>
+      </div>
+    </section>
+    <section class="pane" data-pane="ai">
+      <div class="flex items-center gap-1 pr-2"><h2 class="pane-title mr-auto">Asisten AI</h2>
+        <button id="ai-key-reset" class="panel-x" title="Hapus kunci API dari browser ini" aria-label="Hapus kunci API" hidden><svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3"/></svg></button>
+        <button id="ai-clear" class="panel-x" title="Percakapan baru" aria-label="Percakapan baru"><svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg></button></div>
+      <div id="ai-log" class="flex-1 overflow-y-auto px-3 pb-3 space-y-2" aria-live="polite"></div>
+      <div id="ai-key-box" class="p-3 border-t border-line">
+        <form id="ai-key-form" class="space-y-2">
+          <label class="field-label" for="ai-key">Kunci API Anthropic (Claude)</label>
+          <input id="ai-key" type="password" class="field" placeholder="sk-ant-…" autocomplete="off" spellcheck="false">
+          <button class="btn-primary w-full">Hubungkan</button>
+          <p class="hint">Kunci disimpan di browser ini saja dan hanya dikirim ke api.anthropic.com. Buat kunci di <a class="underline" href="https://platform.claude.com/settings/keys" target="_blank" rel="noopener">platform.claude.com</a>. <a class="underline" href="docs.html#ai">Selengkapnya</a></p>
+        </form>
+      </div>
+      <form id="ai-form" class="p-3 border-t border-line" hidden>
+        <div class="ai-input"><textarea id="ai-in" rows="2" placeholder="mis. Tambah FCU di tengah ruangan lalu tarik duct ke 3 diffuser" aria-label="Pesan ke AI"></textarea>
+          <button id="ai-send" class="btn-primary !px-3" title="Kirim (Enter)" aria-label="Kirim"><svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
+      </form>
+    </section>
+    <section class="pane" data-pane="layer">
+      <h2 class="pane-title">Layer</h2>
+      <ul id="layers" class="flex-1 overflow-y-auto px-2 pb-3 space-y-0.5"></ul>
+      <p class="hint px-4 pb-4 !mt-0">Centang = tampil. Gembok = tidak bisa dipilih/diubah. Nama layer ikut ke DXF.</p>
+    </section>
+    <section class="pane" data-pane="proyek">
+      <h2 class="pane-title">Proyek</h2>
+      <div id="proj" class="flex-1 overflow-y-auto px-4 pb-4"></div>
+    </section>
+    <button data-panel="lib" class="lib-handle" title="Tutup panel (Ctrl+[)" aria-label="Tutup panel">‹</button>
+  </aside>
+
+  <!-- ============ KANVAS ============ -->
+  <main id="canvas" class="relative flex-1 min-w-0 bg-cad overflow-hidden" aria-label="Kanvas gambar">
+    <svg id="cad" data-tool="select" class="absolute inset-0 w-full h-full select-none touch-none" font-family="'JetBrains Mono', monospace">
+      <defs>
+        <pattern id="g1" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M100 0H0V100" fill="none" stroke="#1c2127" stroke-width="1"/></pattern>
+        <pattern id="g2" width="500" height="500" patternUnits="userSpaceOnUse"><rect width="500" height="500" fill="url(#g1)"/><path d="M500 0H0V500" fill="none" stroke="#2a3038" stroke-width="1"/></pattern>
+      </defs>
+      <rect id="grid" x="-1000000" y="-1000000" width="2000000" height="2000000" fill="url(#g2)"/>
+      <g id="world"></g>
+      <g id="overlay"></g>
+    </svg>
+
+    <svg class="absolute left-3 bottom-3 w-11 h-11 pointer-events-none" viewBox="0 0 48 48" fill="none" stroke="#7d8692" stroke-width="1.5" aria-hidden="true">
+      <path d="M8 40V8M8 40H40M4 13l4-6 4 6M35 36l6 4-6 4"/><text x="14" y="12" fill="#7d8692" stroke="none" font-size="10" font-family="monospace">Y</text><text x="36" y="32" fill="#7d8692" stroke="none" font-size="10" font-family="monospace">X</text>
+    </svg>
+
+    <!-- Petunjuk awal (proyek masih kosong) -->
+    <div id="empty-hint" class="absolute top-3 left-3 w-[min(22rem,calc(100%-1.5rem))] bg-panel rounded-xl shadow-2xl p-4">
+      <button id="hint-close" class="absolute top-2 right-2 w-7 h-7 grid place-items-center rounded hover:bg-black/5" aria-label="Tutup petunjuk">✕</button>
+      <div class="field-label">Mulai menggambar</div>
+      <ol class="mt-2 space-y-2.5">
+        <li class="flex gap-3"><span class="shrink-0 grid place-items-center w-6 h-6 rounded-full bg-hazard font-bold text-xs">1</span><span>Seret <b>Indoor ducted</b> dari menu <b>Elemen</b> di kiri ke dalam ruangan.</span></li>
+        <li class="flex gap-3"><span class="shrink-0 grid place-items-center w-6 h-6 rounded-full bg-hazard font-bold text-xs">2</span><span>Tekan <kbd>D</kbd>, klik ujung unit, lalu klik titik belok. Elbow dipasang otomatis. Ketik angka + Enter untuk panjang pas.</span></li>
+        <li class="flex gap-3"><span class="shrink-0 grid place-items-center w-6 h-6 rounded-full bg-hazard font-bold text-xs">3</span><span>Seret <b>diffuser</b> ke ujung duct, isi debitnya.</span></li>
+      </ol>
+      <div class="mt-4 flex flex-wrap gap-2">
+        <button class="btn-primary" data-hint-tool="equip">Taruh FCU</button>
+        <button class="btn-ghost" data-hint-tool="duct">Gambar duct</button>
+      </div>
+    </div>
+
+    <!-- Buka lagi panel yang ditutup -->
+    <button id="show-side" data-panel="side" class="panel-tab right-0 rounded-l-lg" title="Buka properti (Ctrl+])" aria-label="Buka properti">«</button>
+    <!-- Bar tampilan kanan-bawah: pilih, geser, zoom (seperti Canva) -->
+    <div id="viewbar" role="toolbar" aria-label="Tampilan">
+      <button class="vb-btn" data-tool="select" title="Pilih (V)" aria-label="Pilih"><svg viewBox="0 0 24 24" class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M5 3l14 8-6.5 1.5L10 19z"/></svg></button>
+      <button class="vb-btn" data-tool="pan" title="Geser kanvas (H / Spasi)" aria-label="Geser kanvas"><svg viewBox="0 0 24 24" class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V12M11 11.5v-8a1.5 1.5 0 0 1 3 0V12M14 6.5a1.5 1.5 0 0 1 3 0V13M17 9.5a1.5 1.5 0 0 1 3 0V15a6 6 0 0 1-6 6h-2a6 6 0 0 1-5-2.7L4.3 14a1.5 1.5 0 0 1 2.4-1.8L8 14"/></svg></button>
+      <span class="cb-sep"></span>
+      <button class="vb-btn" id="zoom-out" title="Perkecil" aria-label="Perkecil"><svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/></svg></button>
+      <button class="vb-btn !w-14 font-mono text-xs" id="zoom-fit" title="Lihat semua (Shift+Z)"><b id="zoom">100%</b></button>
+      <button class="vb-btn" id="zoom-in" title="Perbesar" aria-label="Perbesar"><svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5v14"/></svg></button>
+    </div>
+    <!-- Toolbar melayang, menu klik kanan, tooltip, edit nama -->
+    <div id="ctxbar" role="toolbar" aria-label="Aksi cepat"></div>
+    <div id="ctxmenu" role="menu"></div>
+    <div id="tip" role="tooltip"></div>
+    <input id="inline" aria-label="Ubah nama" autocomplete="off" spellcheck="false">
+
+    <!-- Panel warning -->
+    <section id="warn-drawer" class="absolute left-3 right-3 bottom-16 sm:left-auto sm:w-96 z-10 bg-panel rounded-xl shadow-2xl overflow-hidden" aria-label="Warning validasi">
+      <header class="flex items-center gap-2 px-4 py-2.5 border-b border-line">
+        <span class="w-2 h-2 rounded-full bg-red-500"></span>
+        <b class="font-cond text-base tracking-wide"><span class="warn-count">0</span> WARNING</b>
+        <span class="text-muted text-xs">tidak menghalangi simpan / export</span>
+        <button id="warn-close" class="ml-auto w-7 h-7 grid place-items-center rounded hover:bg-black/5" aria-label="Tutup">✕</button>
+      </header>
+      <ul id="warn-list" class="divide-y divide-line max-h-[40vh] overflow-y-auto"></ul>
+    </section>
+
+    <!-- ============ PANEL KANAN: properti, muncul saat ada yang dipilih ============ -->
+    <aside id="side" class="flex flex-col bg-panel" aria-label="Properti">
+      <div class="flex items-center justify-between px-4 pt-3 -mb-1"><span class="field-label !mb-0">Properti</span><button data-panel="side" class="panel-x grid" title="Tutup panel (Ctrl+])" aria-label="Tutup properti">✕</button></div>
+      <section id="props" class="p-4 overflow-y-auto"></section>
+    </aside>
+  </main>
+</div>
+<div id="scrim"></div>
+
+<!-- ============ BARIS PERINTAH + STATUS BAR ============ -->
+<div class="h-9 shrink-0 flex items-center gap-2 px-3 bg-[#1d2126] border-t border-black text-xs font-mono">
+  <span class="text-hazard">›</span>
+  <span id="hint" class="text-white/85 truncate"></span>
+  <input id="cmd" class="min-w-[6rem] flex-1 bg-transparent outline-none text-white" placeholder="perintah / angka…" autocomplete="off" spellcheck="false" aria-label="Baris perintah">
+</div>
+<footer class="h-8 shrink-0 flex items-center gap-3 px-3 bg-ink text-white/75 text-xs font-mono whitespace-nowrap overflow-x-auto">
+  <span id="coord" class="w-36 text-white/85">X 0  Y 0</span>
+  <span id="grid-step" class="hidden sm:inline"></span>
+  <button class="sb-toggle" data-opt="snap" title="Snap ke ujung & grid (F3)">SNAP</button>
+  <button class="sb-toggle" data-opt="ortho" title="Garis lurus horizontal/vertikal (F8). Tahan Shift untuk sementara.">ORTHO</button>
+  <button class="sb-toggle" data-opt="grid" title="Tampilkan grid (F7)">GRID</button>
+  <span class="hidden md:inline">Duct <b id="unit" class="text-white"></b></span>
+  <span class="hidden md:inline">Skala <b id="scale" class="text-white"></b></span>
+  <button id="warn-btn" class="ml-auto inline-flex items-center gap-1.5 text-red-300 hover:text-red-200"><span class="w-1.5 h-1.5 rounded-full bg-red-400"></span><span class="warn-count">0</span> warning</button>
+</footer>
+
+<!-- ============ DIALOG EXPORT ============ -->
+<dialog id="dlg-export" class="dlg w-[min(560px,calc(100vw-2rem))]" aria-labelledby="dlg-export-title">
+  <form id="form-export" method="dialog" class="flex flex-col max-h-[85vh]">
+    <header class="px-6 pt-6 pb-2">
+      <h2 id="dlg-export-title" class="font-cond font-bold text-2xl">Export gambar</h2>
+      <p class="text-sm text-muted mt-0.5">Hasil export adalah sketsa bantu. Cek ulang ukuran di lapangan.</p>
+    </header>
+    <div class="px-6 py-4 space-y-5 overflow-y-auto">
+      <fieldset>
+        <legend class="field-label">Format</legend>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <label class="opt"><input type="radio" name="fmt" value="dxf" checked><b>DXF</b><span class="text-xs text-muted leading-snug">Buka di AutoCAD, layer ikut.</span></label>
+          <label class="opt"><input type="radio" name="fmt" value="png"><b>PNG</b><span class="text-xs text-muted leading-snug">Gambar untuk chat.</span></label>
+          <label class="opt"><input type="radio" name="fmt" value="pdf"><b>PDF</b><span class="text-xs text-muted leading-snug">Cetak / simpan PDF.</span></label>
+          <label class="opt"><input type="radio" name="fmt" value="json"><b>.json</b><span class="text-xs text-muted leading-snug">Cadangan proyek.</span></label>
+        </div>
+      </fieldset>
+      <div class="grid grid-cols-2 gap-3">
+        <label><span class="field-label">Skala (ukuran teks)</span><select id="exp-scale" name="scale" class="field"><option>1:50</option><option>1:100</option><option>1:200</option></select></label>
+        <label><span class="field-label">Satuan file DXF</span><select name="unit" class="field"><option value="mm">mm</option><option value="inch">inch</option></select></label>
+      </div>
+      <fieldset>
+        <legend class="field-label">Layer yang ikut</legend>
+        <div id="exp-layers" class="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm"></div>
+      </fieldset>
+      <label class="flex items-start gap-2"><input type="checkbox" name="note" checked class="accent-ink mt-1"><span>Tulis catatan di gambar: <i>"Sketsa bantu – cek ulang di lapangan"</i></span></label>
+      <div id="exp-warn" class="flex gap-2 rounded-lg bg-red-50 ring-1 ring-red-200 p-3 text-xs text-red-900"></div>
+    </div>
+    <footer class="flex items-center gap-2 px-6 py-4 border-t border-line bg-paper rounded-b-xl">
+      <span id="exp-file" class="font-mono text-xs text-muted truncate"></span>
+      <button value="cancel" class="ml-auto btn-ghost">Batal</button>
+      <button id="do-export" value="ok" class="btn-primary">Export</button>
+    </footer>
+  </form>
+</dialog>
+
+<!-- ============ DIALOG PINTASAN ============ -->
+<dialog id="dlg-keys" class="dlg w-[min(760px,calc(100vw-2rem))]" aria-labelledby="dlg-keys-title">
+  <div class="flex flex-col max-h-[85vh]">
+    <header class="flex items-center px-6 pt-5 pb-3 border-b border-line">
+      <h2 id="dlg-keys-title" class="font-cond font-bold text-2xl">Pintasan</h2>
+      <a href="docs.html" target="_blank" class="ml-auto mr-2 btn-ghost">Dokumentasi lengkap ↗</a>
+      <button data-close class=" w-8 h-8 grid place-items-center rounded hover:bg-black/5" aria-label="Tutup">✕</button>
+    </header>
+    <div class="keys px-6 py-4 grid sm:grid-cols-2 gap-x-8 gap-y-5 overflow-y-auto">
+      <section><h3>Alat</h3><dl>
+        <dt><kbd>V</kbd></dt><dd>Pilih</dd><dt><kbd>H</kbd></dt><dd>Geser kanvas</dd><dt><kbd>K</kbd></dt><dd>Ruangan kotak</dd>
+        <dt><kbd>P</kbd></dt><dd>Ruangan bebas (L, T, custom)</dd><dt><kbd>W</kbd></dt><dd>Partisi</dd>
+        <dt><kbd>D</kbd></dt><dd>Duct</dd><dt><kbd>F</kbd></dt><dd>Fitting</dd><dt><kbd>E</kbd></dt><dd>Equipment</dd>
+        <dt><kbd>G</kbd></dt><dd>Diffuser</dd><dt><kbd>U</kbd></dt><dd>Ukur</dd><dt><kbd>T</kbd></dt><dd>Teks</dd><dt><kbd>B</kbd></dt><dd>Coretan tangan</dd>
+      </dl></section>
+      <section><h3>Edit</h3><dl>
+        <dt><kbd>R</kbd></dt><dd>Putar 90° / ganti arah saat menaruh</dd><dt><kbd>M</kbd></dt><dd>Cermin</dd>
+        <dt><kbd>Del</kbd></dt><dd>Hapus</dd><dt><kbd>Ctrl</kbd><kbd>C</kbd> <kbd>V</kbd></dt><dd>Salin, tempel</dd>
+        <dt><kbd>Ctrl</kbd><kbd>D</kbd></dt><dd>Duplikat</dd><dt><kbd>Ctrl</kbd><kbd>G</kbd></dt><dd>Group</dd>
+        <dt><kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>G</kbd></dt><dd>Ungroup</dd><dt>Klik ganda</dt><dd>Pilih 1 isi group</dd>
+        <dt><kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd></dt><dd>Geser 10 mm (+<kbd>Shift</kbd> 100 mm)</dd>
+        <dt><kbd>Ctrl</kbd><kbd>A</kbd></dt><dd>Pilih semua</dd><dt><kbd>Ctrl</kbd><kbd>Z</kbd> <kbd>Y</kbd></dt><dd>Undo, redo</dd>
+        <dt><kbd>Ctrl</kbd><kbd>S</kbd></dt><dd>Simpan</dd><dt><kbd>]</kbd> <kbd>[</kbd></dt><dd>Ke depan, ke belakang</dd>
+        <dt>Klik kanan</dt><dd>Menu aksi</dd><dt>Klik ganda</dt><dd>Ganti nama ruangan / isi teks</dd>
+        <dt>Ruangan</dt><dd>Seret titik ■ / sisi ●. Klik ganda ● tambah titik, ■ hapus titik</dd>
+        <dt>Pintu</dt><dd>Menempel ke dinding. <kbd>M</kbd> engsel, <kbd>R</kbd> arah buka</dd>
+      </dl></section>
+      <section><h3>Saat menggambar</h3><dl>
+        <dt>angka <kbd>Enter</kbd></dt><dd>Panjang duct (mm)</dd><dt><kbd>6x4</kbd> <kbd>Enter</kbd></dt><dd>Ukuran ruangan (m)</dd>
+        <dt><kbd>Enter</kbd> / klik kanan</dt><dd>Selesai duct / tutup ruangan bebas</dd><dt><kbd>Backspace</kbd></dt><dd>Hapus titik terakhir</dd>
+        <dt><kbd>Shift</kbd></dt><dd>Lepas ortho sementara</dd><dt><kbd>Esc</kbd></dt><dd>Batal</dd>
+      </dl></section>
+      <section><h3>Tampilan</h3><dl>
+        <dt>Scroll</dt><dd>Zoom</dd><dt><kbd>Spasi</kbd> / tombol tengah</dt><dd>Geser kanvas</dd>
+        <dt><kbd>Z</kbd></dt><dd>Zoom ke pilihan</dd><dt><kbd>Shift</kbd><kbd>Z</kbd></dt><dd>Lihat semua</dd><dt><kbd>F3</kbd> <kbd>F7</kbd> <kbd>F8</kbd></dt><dd>Snap, grid, ortho</dd>
+        <dt><kbd>Tab</kbd></dt><dd>Mode fokus (tutup panel)</dd><dt><kbd>Ctrl</kbd><kbd>[</kbd> <kbd>]</kbd></dt><dd>Buka/tutup panel kiri, kanan</dd><dt>Menu kiri</dt><dd>Klik lagi menu yang aktif = tutup panel</dd>
+        <dt><kbd>?</kbd></dt><dd>Pintasan ini</dd>
+      </dl></section>
+      <section class="sm:col-span-2"><h3>Baris perintah</h3><dl class="!grid-cols-[auto_1fr_auto_1fr_auto_1fr]">
+        <dt><kbd>L</kbd></dt><dd>Duct</dd><dt><kbd>REC</kbd></dt><dd>Ruangan</dd><dt><kbd>DIM</kbd></dt><dd>Ukur</dd>
+        <dt><kbd>PL</kbd></dt><dd>Ruangan bebas</dd><dt><kbd>WALL</kbd></dt><dd>Partisi</dd><dt><kbd>ZS</kbd></dt><dd>Zoom pilihan</dd>
+        <dt><kbd>TEXT</kbd></dt><dd>Teks</dd><dt><kbd>Z</kbd></dt><dd>Lihat semua</dd><dt><kbd>U</kbd></dt><dd>Undo</dd>
+      </dl></section>
+    </div>
+  </div>
+</dialog>
+
+<script src="js/geom.js"></script>
+<script src="js/model.js"></script>
+<script src="js/render.js"></script>
+<script src="js/dxf.js"></script>
+<script src="js/tools.js"></script>
+<script src="js/editor.js"></script>
+<script src="js/ai.js"></script>
+</body>
+</html>

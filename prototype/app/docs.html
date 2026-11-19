@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dokumentasi · Temandor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="js/ui.js"></script>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body class="min-h-dvh bg-paper text-ink font-sans">
+
+<header class="sticky top-0 z-20 bg-panel border-b border-line">
+  <div class="tape absolute inset-x-0 top-0 h-[3px]"></div>
+  <div class="max-w-6xl mx-auto h-14 px-4 flex items-center gap-3">
+    <a href="index.html" class="flex items-center gap-2">
+      <span class="grid place-items-center w-8 h-8 rounded bg-ink"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="#f2c200" stroke-width="2.2"><path d="M3 6h7a8 8 0 0 1 8 8v7M3 12h7a2 2 0 0 1 2 2v7"/></svg></span>
+      <span class="font-cond font-bold text-xl tracking-wide">TEMANDOR</span>
+    </a>
+    <span class="hidden sm:block text-muted text-sm border-l border-line pl-3">Dokumentasi</span>
+    <a href="#dukung" class="ml-auto hidden sm:inline-flex btn-ghost"><span class="text-red-600">♥</span> Dukung</a>
+    <a href="index.html" class="btn-primary max-sm:ml-auto">Buka aplikasi</a>
+  </div>
+</header>
+
+<div class="max-w-6xl mx-auto px-4 py-8 lg:grid lg:grid-cols-[13rem_1fr] lg:gap-10">
+  <nav id="toc" class="hidden lg:block sticky top-20 self-start text-sm space-y-0.5" aria-label="Isi dokumentasi"></nav>
+
+  <main class="doc max-w-3xl">
+    <h1 class="font-cond font-bold text-4xl sm:text-5xl leading-none">Dokumentasi</h1>
+    <p class="mt-3 text-muted text-lg">Temandor adalah aplikasi sketsa ducting &amp; ventilasi untuk teknisi lapangan: gambar denah, rangkai duct, cek kesalahan, export ke DXF untuk AutoCAD. Gratis dan open source, jalan di browser, data tersimpan di perangkatmu sendiri.</p>
+
+    <section id="mulai">
+      <h2>Mulai cepat</h2>
+      <ol>
+        <li>Di beranda klik <b>Proyek baru</b>, isi nama dan satuan duct (inch atau mm).</li>
+        <li>Buka menu <b>Elemen</b> di kiri, seret <b>Indoor ducted</b> (FCU) ke dalam ruangan.</li>
+        <li>Tekan <kbd>D</kbd>, klik ujung supply FCU, lalu klik titik-titik belokan. Elbow dipasang otomatis. Ketik angka + <kbd>Enter</kbd> untuk panjang yang pas, <kbd>Enter</kbd> lagi untuk selesai.</li>
+        <li>Seret <b>Diffuser</b> ke ujung duct, isi debitnya di panel Properti.</li>
+        <li>Klik <b>Export</b> → DXF. Layer ikut, siap dibuka di AutoCAD.</li>
+      </ol>
+      <p>Semua tersimpan otomatis di browser. Untuk pindah perangkat atau cadangan, export <code>.json</code> lalu buka lagi lewat <b>Buka file .json</b> di beranda.</p>
+    </section>
+
+    <section id="workspace">
+      <h2>Workspace</h2>
+      <p>Menu kiri berisi kategori. Klik untuk membuka panelnya, klik lagi untuk menutup.</p>
+      <table>
+        <tr><th>Elemen</th><td>Semua komponen: ruangan siap pakai (kotak, L, T, U), arsitektur, equipment, duct, fitting, diffuser. Seret ke kanvas, atau klik lalu klik di kanvas. Ada kolom cari.</td></tr>
+        <tr><th>Alat</th><td>Alat gambar: jalur duct <kbd>D</kbd>, ruangan kotak <kbd>K</kbd>, ruangan bebas <kbd>P</kbd>, partisi <kbd>W</kbd>, ukur <kbd>U</kbd>, coretan tangan <kbd>B</kbd>.</td></tr>
+        <tr><th>Teks</th><td>Judul, subjudul, teks biasa. Langsung muncul di tengah layar dan bisa diketik.</td></tr>
+        <tr><th>AI</th><td>Asisten AI yang bisa menggambar, mengubah, dan mengecek sketsa. Lihat <a href="#ai">Asisten AI</a>.</td></tr>
+        <tr><th>Layer</th><td>Tampil/sembunyikan dan kunci layer.</td></tr>
+        <tr><th>Proyek</th><td>Satuan, skala gambar, gantungan otomatis, tema kanvas, total debit per unit.</td></tr>
+      </table>
+      <p>Panel <b>Properti</b> muncul di kanan saat ada komponen yang dipilih. Toolbar kecil melayang di atas pilihan untuk aksi cepat (putar, cermin, kunci, duplikat, hapus), klik kanan untuk menu lengkap. Kanan bawah: Pilih, Geser, dan zoom. <kbd>Tab</kbd> menutup semua panel (mode fokus).</p>
+      <p>Di HP/tablet, menu kiri pindah ke bawah layar dan panel muncul dari bawah.</p>
+    </section>
+
+    <section id="ruangan">
+      <h2>Ruangan &amp; arsitektur</h2>
+      <ul>
+        <li><b>Ruangan kotak</b> <kbd>K</kbd>: seret dua sudut, atau klik sudut pertama lalu ketik <code>6x4</code> + <kbd>Enter</kbd> (meter).</li>
+        <li><b>Ruangan bebas</b> <kbd>P</kbd>: klik tiap sudut. Klik titik awal, <kbd>Enter</kbd>, atau klik kanan untuk menutup. Cocok untuk bentuk L, T, dan custom.</li>
+        <li><b>Edit bentuk</b>: pilih ruangan, seret titik ■ atau sisi ●. Klik ganda ● menambah titik, klik ganda ■ menghapus titik. Toolbar ruangan punya tombol bentuk siap pakai.</li>
+        <li><b>Pintu, jendela, bukaan</b> menempel ke dinding terdekat, memotong garis dinding, dan ikut saat ruangan digeser. Pintu: <kbd>M</kbd> balik engsel, <kbd>R</kbd> balik arah buka.</li>
+        <li><b>Partisi</b> <kbd>W</kbd> bisa digambar bersambung. <b>Kolom, tangga, lift, shaft</b> dicek terhadap duct: duct yang menabrak memunculkan warning. Duct yang menembus dinding ditandai kotak <i>bobokan</i>.</li>
+        <li>Klik ganda nama ruangan atau teks untuk mengubahnya langsung di kanvas.</li>
+      </ul>
+    </section>
+
+    <section id="duct">
+      <h2>Duct &amp; sambungan</h2>
+      <ul>
+        <li>Komponen yang ditaruh dekat ujung duct otomatis <b>menempel, berputar, dan ikut ukuran</b> ujung itu. <kbd>R</kbd> mengganti arah.</li>
+        <li>Titik sambung komponen terpilih: <span class="text-green-700 font-semibold">hijau</span> = tersambung, <span class="text-red-700 font-semibold">merah</span> = terbuka.</li>
+        <li>Debit dihitung dari diffuser ke unit (FCU/fan), tampil di menu Proyek.</li>
+        <li>Gantungan dipasang otomatis tiap jarak tertentu (atur di menu Proyek).</li>
+      </ul>
+    </section>
+
+    <section id="warning">
+      <h2>Warning</h2>
+      <p>Temandor mengecek gambar terus-menerus. Warning tidak menghalangi simpan atau export, hanya pengingat.</p>
+      <table>
+        <tr><th>Ujung terbuka</th><td>Duct/fitting belum tersambung. Sambungkan atau pasang end cap.</td></tr>
+        <tr><th>Ukuran beda tanpa transisi</th><td>Dua ukuran berbeda bertemu langsung. Tambah transisi.</td></tr>
+        <tr><th>Sistem tercampur</th><td>Duct supply (SA) tersambung ke exhaust (EA).</td></tr>
+        <tr><th>Duct menabrak</th><td>Duct menabrak kolom, tangga, atau lift. Menembus dinding tidak dianggap salah (ditandai bobokan).</td></tr>
+        <tr><th>Debit belum diisi</th><td>Diffuser/grille belum punya debit.</td></tr>
+      </table>
+      <p>Arahkan kursor ke tanda <b class="text-red-700">!</b> untuk melihat alasannya, klik untuk memilih komponennya. Daftar lengkap ada di tombol warning kanan bawah.</p>
+    </section>
+
+    <section id="export">
+      <h2>Export</h2>
+      <p><b>DXF</b> untuk AutoCAD (layer ikut, satuan mm atau inch), <b>PNG</b> untuk chat, <b>PDF</b> untuk cetak, <b>.json</b> sebagai cadangan proyek. Layer di file DXF:</p>
+      <table id="layer-table"></table>
+    </section>
+
+    <section id="pintasan">
+      <h2>Pintasan penting</h2>
+      <table>
+        <tr><th><kbd>V</kbd> <kbd>H</kbd></th><td>Pilih, geser kanvas (atau tahan <kbd>Spasi</kbd>)</td></tr>
+        <tr><th><kbd>D</kbd> <kbd>K</kbd> <kbd>P</kbd> <kbd>W</kbd> <kbd>U</kbd> <kbd>T</kbd> <kbd>B</kbd></th><td>Duct, ruangan, ruangan bebas, partisi, ukur, teks, coretan</td></tr>
+        <tr><th><kbd>R</kbd> <kbd>M</kbd></th><td>Putar 90°, cermin</td></tr>
+        <tr><th><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Y</kbd></th><td>Undo, redo</td></tr>
+        <tr><th><kbd>Ctrl</kbd>+<kbd>G</kbd></th><td>Group (<kbd>Shift</kbd> untuk ungroup)</td></tr>
+        <tr><th><kbd>Z</kbd> / <kbd>Shift</kbd>+<kbd>Z</kbd></th><td>Zoom ke pilihan, lihat semua</td></tr>
+        <tr><th><kbd>?</kbd></th><td>Daftar pintasan lengkap di editor</td></tr>
+      </table>
+    </section>
+
+    <section id="ai">
+      <h2>Asisten AI</h2>
+      <p>Menu <b>AI</b> di editor menghubungkan Temandor dengan Claude (Anthropic). Tulis permintaan biasa, misalnya <i>"tambah ruang rapat 6x5 m di kanan dengan pintu dan 2 diffuser"</i> atau <i>"cek gambar ini dan jelaskan warning-nya"</i>. AI membaca gambar lalu mengubahnya langsung. Setiap langkah AI bisa di-undo dengan <kbd>Ctrl</kbd>+<kbd>Z</kbd>.</p>
+      <h3>Cara menghubungkan</h3>
+      <ol>
+        <li>Buat kunci API di <a href="https://platform.claude.com/settings/keys" target="_blank" rel="noopener">platform.claude.com</a> (perlu akun dan saldo API).</li>
+        <li>Di editor buka menu <b>AI</b>, tempel kuncinya, klik <b>Hubungkan</b>.</li>
+      </ol>
+      <div class="callout">
+        <b>Privasi &amp; biaya.</b> Kunci disimpan di browser ini saja dan hanya dikirim ke <code>api.anthropic.com</code>. Isi gambar dikirim ke Anthropic saat kamu bertanya. Pemakaian ditagih ke akun API-mu. Jangan pakai fitur ini di komputer umum; hapus kunci lewat ikon kunci di panel AI.
+      </div>
+      <h3>Yang bisa dilakukan AI</h3>
+      <table id="ai-tools"></table>
+    </section>
+
+    <section id="mcp">
+      <h2>Server MCP</h2>
+      <p>Temandor punya server <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener">MCP</a> supaya Claude Desktop, Claude Code, atau aplikasi AI lain yang mendukung MCP bisa membuat dan mengubah proyek Temandor. Server bekerja pada file <code>.json</code> di satu folder (default <code>~/Temandor</code>). Hasilnya dibuka di editor lewat <b>Buka file .json</b>, dan proyek dari editor bisa di-export ke folder itu.</p>
+      <p>Syarat: Node.js 18+. Tanpa <code>npm install</code>, tanpa dependensi.</p>
+      <h3>Claude Code</h3>
+      <pre><code>claude mcp add temandor -e TEMANDOR_DIR=/path/folder/proyek -- node /path/temandor/mcp/server.js</code></pre>
+      <h3>Claude Desktop</h3>
+      <p>Tambahkan ke <code>claude_desktop_config.json</code>, lalu buka ulang Claude Desktop:</p>
+      <pre><code>{
+  "mcpServers": {
+    "temandor": {
+      "command": "node",
+      "args": ["/path/temandor/mcp/server.js"],
+      "env": { "TEMANDOR_DIR": "/path/folder/proyek" }
+    }
+  }
+}</code></pre>
+      <h3>Tool yang tersedia</h3>
+      <table id="mcp-tools">
+        <tr><th>list_projects</th><td>Daftar file proyek di folder.</td></tr>
+        <tr><th>create_project</th><td>Buat proyek baru (bisa proyek contoh dengan <code>demo: true</code>).</td></tr>
+        <tr><th>export_dxf</th><td>Export proyek ke <code>.dxf</code> di sebelah file-nya.</td></tr>
+      </table>
+      <p class="hint">Plus semua aksi asisten AI di atas, dengan parameter tambahan <code>file</code>. Contoh permintaan ke Claude: <i>"Buat proyek Temandor 'Gudang A' satuan mm, gambar ruangan 12x8 m, FCU di tengah, dan duct ke 4 diffuser, lalu export DXF."</i></p>
+    </section>
+
+    <section id="kontribusi">
+      <h2>Kontribusi</h2>
+      <p>Temandor open source. Tanpa build step: HTML, CSS, dan JavaScript biasa.</p>
+      <pre><code># jalankan lokal (pilih salah satu)
+npx serve app
+python -m http.server -d app 5179
+
+# tes logika inti + server MCP
+node app/test.js</code></pre>
+      <ul>
+        <li><code>app/js/geom.js</code>: tipe komponen, bentuk, grip.</li>
+        <li><code>app/js/model.js</code>: proyek, sambungan, validasi.</li>
+        <li><code>app/js/tools.js</code>: aksi gambar untuk AI &amp; MCP.</li>
+        <li><code>app/js/editor.js</code>, <code>ai.js</code>: editor dan asisten AI.</li>
+        <li><code>mcp/server.js</code>: server MCP (stdio).</li>
+      </ul>
+      <p>Laporan bug dan ide fitur sangat membantu. Tulis jelas langkahnya, lampirkan file <code>.json</code> proyek kalau bisa.</p>
+    </section>
+
+    <section id="dukung">
+      <h2>Dukung Temandor</h2>
+      <p>Temandor gratis untuk semua teknisi. Kalau aplikasi ini membantu pekerjaanmu, dukunganmu membiayai pengembangan, server, dan waktu untuk fitur baru.</p>
+      <div id="donate" class="grid sm:grid-cols-2 gap-3 mt-4"></div>
+      <p class="hint mt-3">Tidak bisa donasi? Bagikan Temandor ke rekan teknisi, atau laporkan bug. Itu juga dukungan.</p>
+    </section>
+  </main>
+</div>
+
+<script src="js/geom.js"></script>
+<script src="js/model.js"></script>
+<script src="js/tools.js"></script>
+<script>
+  // Daftar isi, tabel layer & tool diambil dari kode supaya selalu sesuai
+  $('#toc').innerHTML = $$('.doc section').map(s => `<a href="#${s.id}" class="block px-3 py-1.5 rounded hover:bg-black/5">${$('h2', s).textContent}</a>`).join('');
+  $('#layer-table').innerHTML = '<tr><th>Layer DXF</th><td><b>Isi</b></td></tr>' + LAYERS.map(([, nm, dxf]) => `<tr><th><code>${dxf}</code></th><td>${nm}</td></tr>`).join('');
+  $('#ai-tools').innerHTML = toolDefs().map(t => `<tr><th><code>${t.name}</code></th><td>${t.description}</td></tr>`).join('');
+  $('#donate').innerHTML = donateHTML();
+</script>
+</body>
+</html>
