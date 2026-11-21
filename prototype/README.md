@@ -14,7 +14,9 @@ python -m http.server 5179 --directory app
 
 Butuh internet untuk Tailwind CDN dan Google Fonts. Tanpa build step, tanpa backend: proyek disimpan di browser (localStorage). Unduh `.json` untuk cadangan.
 
-Dokumentasi pengguna: buka `app/docs.html` (juga lewat tombol **Docs** di beranda).
+Halaman depan (landing) untuk pengunjung baru: `app/landing.html` (tautan **Tentang** di beranda). Saat login nanti wajib (ADR 0001), landing ini yang jadi halaman awal.
+
+Dokumentasi pengguna: buka `app/docs.html` (juga lewat tombol **Docs** di beranda). Konteks produk & desain: `../PRODUCT.md`, `../DESIGN.md`.
 
 Cek logika inti (jalur + elbow otomatis, koneksi port, validasi, DXF, aksi AI, server MCP):
 
@@ -31,27 +33,29 @@ node app/test.js
 | Ruangan | `K` (atau `REC`), klik dua sudut, atau klik satu sudut lalu ketik `6x4` (meter) / `6000,4000` (mm). |
 | Ukur & teks | `U` (`DIM`) tiga klik: awal, akhir, posisi garis. `T` untuk teks. |
 | Pilih & edit | Klik, Shift+klik, tarik kotak (kiri→kanan = window, kanan→kiri = crossing). Seret untuk pindah (menempel ke ujung terbuka). Grip biru: ubah panjang / posisi. Grip putih: ubah ukuran (lebar duct & fitting termasuk elbow, muka diffuser/grille, badan FCU/fan). |
-| Ubah | Panel Properti: sistem SA/EA, ukuran W×H atau Ø, panjang, sudut, debit, elevasi, rotasi. `R` putar, `M` cermin/balik belokan, `Del`, `Ctrl+C/V/D`, `Ctrl+Z/Y`, panah = geser 10 mm (Shift 100 mm). |
+| Ubah | Panel Properti: sistem SA/EA, ukuran W×H atau Ø, panjang, sudut, debit, elevasi, rotasi. Elbow: sudut bebas 5–150° (atau chip 90/60/45/30/22,5/15), ujung b beda ukuran (elbow reducing, satu potong), tipe radius 1,0×W / 1,5×W atau siku + sudu (vane). `R` putar, `M` cermin/balik belokan, `Del`, `Ctrl+C/V/D`, `Ctrl+Z/Y`, panah = geser 10 mm (Shift 100 mm). |
 | Group & rata | `Ctrl+G` group, `Ctrl+Shift+G` ungroup, klik ganda = pilih satu isi group. Rata kiri/tengah/kanan/atas/bawah dari panel saat pilih banyak. |
 | Bentuk ruangan | Pilih ruangan: seret titik sudut ■ atau tengah sisi ● (sisi ditarik keluar/masuk, dinding baru otomatis). Klik ganda ● tambah titik, klik ganda ■ hapus titik. Bentuk siap pakai Persegi / L / T / U (library, toolbar melayang, panel). `P` (`PL`) = ruangan bebas: klik titik-titik, klik titik awal / Enter untuk menutup. Klik ganda ruangan = ganti nama. |
 | Arsitektur | Elemen › **Arsitektur**: kolom, pintu (tunggal/ganda/geser), jendela, bukaan, partisi (`W`, berantai), shaft, balok, tangga (lurus/L), lift, tinggi plafon. Pintu/jendela/bukaan **menempel ke dinding**, memotong garis dinding, bisa digeser sepanjang dinding, ikut saat ruangan digeser/dibentuk ulang. Pintu: `M` engsel, `R` arah buka. |
 | Toolbar melayang & klik kanan | Pilih komponen → toolbar aksi cepat di atasnya (ruangan: bentuk, tambah pintu/jendela/kolom/partisi). Klik kanan: salin, tempel, group, putar, ke depan/belakang (`]` `[`), kunci, zoom ke pilihan. |
 | Kunci | Kunci per komponen (mis. ruangan) supaya tidak ikut tergeser saat menggambar. Tetap bisa dipilih untuk dibuka. |
-| Workspace | Rail kiri seperti Canva: **Elemen, Alat, Teks, Layer, Proyek**. Klik = buka panel, klik lagi = tutup (`Ctrl+[`). Properti melayang di kanan, muncul hanya saat ada yang dipilih (`Ctrl+]`). Kanan-bawah: Pilih, Geser, zoom −/+/lihat semua. `Tab` = mode fokus. |
-| Asisten AI | Menu **AI**: minta Claude menggambar, mengubah, atau mengecek sketsa dengan bahasa biasa. Pakai kunci API Anthropic milik pengguna (disimpan di browser, hanya dikirim ke api.anthropic.com). Model `claude-opus-5-5`, fallback server-side aktif. Tiap langkah AI = satu undo. |
+| Workspace | Rail kiri seperti Canva: **Elemen, Alat, Teks, Layer, Proyek** (Proyek = tab Semua proyek dengan thumbnail + cari, dan tab Proyek ini untuk pengaturan). Klik = buka panel, klik lagi = tutup (`Ctrl+[`). Properti melayang di kanan, muncul hanya saat ada yang dipilih (`Ctrl+]`). Kanan-bawah: Pilih, Geser, zoom −/+/lihat semua. `Ctrl+.` = mode fokus. Keyboard: fokus ke kanvas lalu `Tab`/`Shift+Tab` memilih komponen, panah menggeser, `Delete` menghapus (bisa diurungkan dari toast). |
+| Asisten AI | Tombol **Tanya AI** melayang di bawah kanvas (`Ctrl+K`), seperti Gemini: minta Claude menggambar, mengubah, atau mengecek sketsa dengan bahasa biasa. Belum terkoneksi → hubungkan di Pengaturan › Integrasi AI dengan kunci API Anthropic milik pengguna (disimpan di browser, hanya dikirim ke api.anthropic.com). Model `claude-opus-5-5`, fallback server-side aktif. Tiap langkah AI = satu undo: komponen yang diubah AI langsung terpilih & di-zoom, dan balon langkahnya punya tombol **Urungkan langkah ini**. |
 | Server MCP | `mcp/server.js` (Node 18+, tanpa dependensi): Claude Desktop / Claude Code bisa membuat & mengubah file proyek `.json` dan export DXF. Aksi yang sama dengan asisten AI (`app/js/tools.js`). Setup di docs. |
 | Docs & donasi | `app/docs.html`: panduan, export/layer, AI, MCP, kontribusi. Tombol **♥ Dukung** (beranda, editor, menu Proyek) → link donasi dari `DONATE` di `app/js/ui.js`; `.github/FUNDING.yml` untuk tombol Sponsor GitHub. |
-| Teks & coretan | Menu **Teks**: judul/subjudul/teks biasa, langsung muncul dan diketik di kanvas (tanpa popup). Menu **Alat** › Coretan tangan (`B`) untuk sketsa/markup bebas, layer MARKUP. |
+| Teks & coretan | Menu **Teks**: judul/subjudul/teks biasa, langsung muncul dan diketik di kanvas (tanpa popup). Properti teks: ukuran cepat (Kecil/Sedang/Besar/Judul, ikut skala) atau mm, warna (merah = revisi/cek lapangan, kuning, hijau, biru, putih), rata kiri/tengah/kanan, tebal, miring, garis bawah, kotak berlatar. Semua ikut DXF kecuali tebal. **Catatan + panah**: teks dengan panah penunjuk ke komponen; seret titik biru untuk memindah teksnya. Menu **Alat** › Coretan tangan (`B`) untuk sketsa/markup bebas, layer MARKUP. |
 | Tema | Kanvas gelap / terang (tombol ◐), tersimpan di browser. |
-| Template (mock) | Beranda: katalog template dengan filter kategori, harga, penjual, rating. Template gratis bisa dipakai; beli & jadi penjual masih mock. |
+| Template (mock) | Beranda: katalog dengan filter. `template.html?id=` detail (pratinjau, isi gambar, ulasan) → `checkout.html?id=` bayar mock (perlu masuk) → template jadi milikmu. `seller.html`: daftar jadi penjual → dasbor penjual (status, statistik, template saya, **Jadikan template** dari proyek; tombol "Simulasikan disetujui" khusus prototype). |
+| Akun & pengaturan (mock) | `login.html?mode=masuk\|daftar\|lupa`: masuk/daftar/lupa sandi, opsional (ADR 0001). Setelah masuk: avatar di header, Akun di `settings.html` (ubah profil: nama, email, kota, peran; daftar template dimiliki + Pakai; status penjual; keluar). `settings.html#integrasi`: pilih AI; hanya Claude yang tersambung sungguhan (ADR 0002, 0003). `404.html` halaman tidak ditemukan. |
 | Pintasan | Tombol `?` di atas atau tekan `?`: daftar semua pintasan. Petunjuk awal hanya muncul sekali. |
-| Bantuan gambar | SNAP (F3), ORTHO (F8, Shift = sementara), GRID (F7), crosshair, info panjang & sudut di kursor, scroll = zoom, tombol tengah / Spasi = geser, `Z` = zoom ke pilihan, `Shift+Z` = lihat semua. |
+| Bantuan gambar | SNAP (F3), ORTHO (F8, Shift = sementara), GRID (F7), crosshair, info panjang & sudut di kursor, scroll = zoom, **dua jari = zoom + geser di HP/tablet**, tombol tengah / Spasi = geser, `Z` = zoom ke pilihan, `Shift+Z` = lihat semua. |
 | Otomatis | Label ukuran, panah aliran, gantungan tiap 1,5 m, ukuran ruangan, total debit per FCU/fan. |
 | Warning | Ujung terbuka, ukuran beda tanpa transisi, sistem tercampur, debit kosong, **duct menabrak kolom/tangga/lift**. Hover tanda ! = alasan langsung muncul; klik = pilih komponen, cara perbaikan tampil di panel. Saat daftar warning dibuka, judulnya tampil di kanvas. Tidak pernah melarang. Duct **boleh menembus dinding** (ditandai kotak bobokan, bukan warning). |
 | Layer | Tampil/sembunyi dan kunci per layer. |
-| Export | DXF R12 (layer DUCT-SA, DUCT-EA, EQUIPMENT, DIFFUSER, HANGER, DIMENSION, TEXT, A-WALL, A-COLS, A-DOOR, A-MISC; mm atau inch), PNG, PDF (lewat print), .json. |
+| Export | DXF R12 (layer DUCT-SA, DUCT-EA, EQUIPMENT, DIFFUSER, HANGER, DIMENSION, TEXT, A-WALL, A-COLS, A-DOOR, A-MISC; mm atau inch), PNG, PDF (lewat print), .json. Setelah export: konfirmasi **File siap** + **Kirim gambar PNG** (menu bagikan bawaan HP; di perangkat tanpa fitur itu PNG diunduh). |
+| Daftar material (BOQ) | Dari dialog Export, panel Proyek › Proyek ini, atau ketik `BOQ`: panjang duct per sistem & ukuran, fitting, diffuser/grille, gantungan, equipment, dihitung dari gambar. **Unduh CSV** (Excel Indonesia: pemisah `;`, koma desimal) atau **Salin teks** untuk WhatsApp. Belum termasuk sisa potong & sambungan. |
 
-Belum: uji buka DXF di AutoCAD sungguhan, linetype putus-putus di DXF (balok/bukaan masih garis penuh), pintu di partisi, double elbow sebagai satu komponen (sementara: gambar duct dengan 2 belokan), pinch-zoom di HP, RA/FA, BOQ, resize group sekaligus.
+Belum: uji buka DXF di AutoCAD sungguhan (file + checklist di `uji-dxf/`), linetype putus-putus di DXF (balok/bukaan masih garis penuh), pintu di partisi, double elbow sebagai satu komponen (sementara: gambar duct dengan 2 belokan), RA/FA, harga di BOQ, resize group sekaligus.
 
 ## Mock P0
 
@@ -205,13 +209,22 @@ Mock dibuat **statis** (HTML + Tailwind, sedikit JS hanya untuk interaksi UI sep
 temandor/
 ├─ README.md
 ├─ .github/FUNDING.yml    # tombol Sponsor GitHub (isi handle donasi)
+├─ uji-dxf/              # contoh DXF + checklist uji di AutoCAD
 ├─ mcp/server.js          # server MCP stdio: node mcp/server.js (folder proyek: TEMANDOR_DIR)
 ├─ app/                   # prototype P1 (script biasa, tanpa build)
+│  ├─ landing.html        # halaman depan untuk pengunjung baru (lembar gambar + kop = form)
 │  ├─ index.html          # beranda: daftar proyek, proyek baru, buka .json
 │  ├─ editor.html         # editor
 │  ├─ docs.html           # dokumentasi pengguna
+│  ├─ settings.html       # pengaturan: akun, integrasi AI, preferensi (mock)
+│  ├─ login.html          # masuk / daftar / lupa sandi (mock)
+│  ├─ template.html       # detail template
+│  ├─ checkout.html       # pembayaran template (mock)
+│  ├─ seller.html         # daftar jadi penjual (mock)
+│  ├─ 404.html
 │  ├─ test.js             # cek logika inti: node app/test.js
-│  ├─ css/app.css
+│  ├─ css/app.css         # gaya bersama aplikasi
+│  ├─ css/landing.css     # gaya khusus landing
 │  ├─ assets/svg/         # ikon library
 │  └─ js/
 │     ├─ geom.js          # komponen parametrik: port, primitive, grip, jalur → duct + elbow
@@ -222,6 +235,7 @@ temandor/
 │     ├─ editor.js        # interaksi editor
 │     ├─ ai.js            # asisten AI (Claude) di editor
 │     ├─ home.js          # beranda
+│     ├─ store.js         # katalog template (mock) + helper beli/pakai
 │     └─ ui.js            # helper bersama + config Tailwind
 ├─ mock/
 │  ├─ index.html          # beranda / daftar proyek + dialog proyek baru

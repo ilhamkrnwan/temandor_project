@@ -89,6 +89,45 @@ assert.deepStrictEqual(ai.types, ['straight', 'elbow', 'straight']);
 assert.ok(ai.door, 'pintu menempel ke dinding');
 assert.ok(ai.W === 8000 && ai.name === 'Lobby' && ai.bad.includes('naga') && ai.n === 5 && ai.warn && ai.tools === 6);
 
+// 7b. Elbow: sudut bebas, mengecil (reducing), siku + vane; teks bergaya & catatan + panah sampai DXF
+const el = run(`(() => {
+  const p = newProject({ unit: 'inch' }), c = ctxOf(p, connect(p)), R = 24 * 25.4, r1 = v => Math.round(v * 10) / 10;
+  const old = worldPorts(mk('elbow'), 'inch')[1], free = worldPorts(mk('elbow', { angle: 35 }), 'inch')[1];
+  const red = mk('elbow', { w2: 18, h2: 14 }), rb = worldPorts(red, 'inch')[1];
+  const pair = e => { const s = mk('straight', { w: 18, h: 14, L: 1000 }); attach(s, 'a', worldPorts(e, 'inch').find(q => q.id === 'b'), 'inch');
+    const q = newProject({ unit: 'inch' }); q.nodes = [e, s]; return validate(q, connect(q)).filter(w => w.kind === 'size').length; };
+  const sq = mk('elbow', { et: 'sq' }), sqb = worldPorts(sq, 'inch')[1], d = R / 2 + 75;
+  const note = mk('note', { x: 100, y: 200 }), ar = worldPrims(note, c).find(x => x.k === 'arrow'), tip = rotP([ar.h / 2, 0], ar.dir);
+  const t = newProject({ unit: 'mm' }); t.nodes = [mk('text', { s: 'CEK', col: 'merah', it: true, ul: true })];
+  const dx = toDXF(t, { layers: new Set(LAYERS.map(l => l[0])), unit: 'mm' });
+  return { old: old.pos.map(r1), oldR: r1(R), free: Math.round(free.wdir), red: [rb.w, rb.h], sizeRed: pair(red), sizePlain: pair(mk('elbow')),
+    sq: sqb.pos.map(r1), sqD: r1(d), vanes: worldPrims(sq, c).filter(x => x.k === 'arc').length,
+    tip: [r1(ar.p[0] + tip[0]), r1(ar.p[1] + tip[1])], dxf: [dx.includes('%%uCEK'), /\\n51\\n15\\.000\\n/.test(dx), /\\n8\\nDIMENSION\\n62\\n1\\n/.test(dx)] };
+})()`);
+assert.deepStrictEqual(el.old, [el.oldR, el.oldR], 'elbow lama (R = lebar) tidak berubah');
+assert.strictEqual(el.free, 35, 'sudut bebas');
+assert.deepStrictEqual(el.red, [18, 14], 'ujung b elbow reducing');
+assert.ok(el.sizeRed === 0 && el.sizePlain === 1, 'reducing ke duct kecil tanpa warning; elbow biasa tetap warning');
+assert.deepStrictEqual(el.sq, [el.sqD, el.sqD], 'elbow siku 90°: ujung b di (d, d)');
+assert.ok(el.vanes >= 2, 'elbow siku punya sudu (vane)');
+assert.deepStrictEqual(el.tip, [100, 200], 'ujung panah catatan tepat di titik yang ditunjuk');
+assert.deepStrictEqual(el.dxf, [true, true, true], 'DXF: garis bawah, miring, warna merah');
+
+// 7c. Daftar material (BOQ) dihitung dari gambar + CSV untuk Excel
+const bq = run(`(() => {
+  const p = demoProject(), rows = boq(p), find = (item, spec) => rows.find(r => r.item === item && (spec == null || r.spec === spec));
+  const ductM = p.nodes.filter(n => n.type === 'straight').reduce((a, n) => a + n.L, 0) / 1000;
+  const csv = boqCSV(rows).split('\\r\\n');
+  return { kats: [...new Set(rows.map(r => r.kat))], ductM: Math.round(ductM * 10) / 10, sumM: Math.round(rows.filter(r => r.unit === 'm').reduce((a, r) => a + r.qty, 0) * 10) / 10,
+    diff: find('Diffuser SA').qty, fcu: find('Indoor ducted').spec, hang: find('Gantungan duct (rod + support)').qty, csvHead: csv[0], csvRows: csv.length - 1, n: rows.length,
+    empty: boq(newProject()).length };
+})()`);
+assert.deepStrictEqual(bq.kats, ['Duct', 'Fitting', 'Perlengkapan', 'Equipment'], 'urutan kategori BOQ');
+assert.strictEqual(bq.sumM, bq.ductM, 'total panjang duct = jumlah panjang duct lurus');
+assert.ok(bq.diff === 4 && bq.fcu === 'FCU-01' && bq.hang > 0, 'diffuser, FCU, gantungan terhitung');
+assert.ok(bq.csvHead.endsWith('Kategori;Item;Spesifikasi;Jumlah;Satuan') && bq.csvRows === bq.n, 'CSV: header + satu baris per item');
+assert.strictEqual(bq.empty, 0, 'proyek tanpa komponen: BOQ kosong');
+
 // 8. Server MCP: initialize, tools/list, buat proyek, tambah ruangan, export DXF (folder sementara)
 const os = require('os'), cp = require('child_process');
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'temandor-'));

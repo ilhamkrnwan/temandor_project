@@ -1,5 +1,6 @@
 // Temandor – tulis DXF R12 (ASCII) dari primitive yang sama dengan tampilan layar.
 // Y dibalik (DXF: Y ke atas). Satuan model: mm atau inch.
+const PICK_ACI = { merah: 1, kuning: 2, hijau: 3, biru: 5, putih: 7 }; // warna pilihan teks → nomor warna AutoCAD
 function toDXF(p, o) {
   const cn = connect(p), c = ctxOf(p, cn), k = o.unit === 'inch' ? 1 / 25.4 : 1;
   const F = v => (Math.round(v * k * 1000) / 1000).toString(), FY = v => F(-v), A = a => (((a % 360) + 360) % 360).toFixed(3);
@@ -13,7 +14,7 @@ function toDXF(p, o) {
   for (const n of p.nodes) for (const pr of worldPrims(n, c)) {
     const key = pr.layer || layerOf(n);
     if (!o.layers.has(key) || pr.k === 'hit' || pr.nostroke) continue; // isian warna (latar/arsir) tidak ikut DXF
-    const L = pr.k === 't' && key !== 'dim' ? 'TEXT' : name[key];
+    const L = pr.k === 't' && key !== 'dim' ? 'TEXT' : name[key], start = e.length;
     switch (pr.k) {
       case 'l': line(L, pr.a, pr.b); break;
       case 'pl': loop(L, pr.pts, pr.closed); break;
@@ -29,11 +30,14 @@ function toDXF(p, o) {
       }
       case 't': {
         const al = { start: 0, middle: 1, end: 2 }[pr.anchor] || 0, x = F(pr.p[0]), y = FY(pr.p[1]);
-        put(0, 'TEXT', 8, L, 10, x, 20, y, 40, F(pr.h), 1, S(pr.s), 50, A(-pr.rot));
+        put(0, 'TEXT', 8, L, 10, x, 20, y, 40, F(pr.h), 1, (pr.ul ? '%%u' : '') + S(pr.s), 50, A(-pr.rot));
+        if (pr.it) put(51, '15.000'); // miring 15° (italic); tebal tidak ada di TEXT R12
         if (al) put(72, al, 11, x, 21, y);
         break;
       }
     }
+    // Warna pilihan (teks/catatan): nomor warna AutoCAD setelah kode layer tiap entitas yang baru ditulis
+    if (pr.col && PICK_ACI[pr.col]) for (let i = start; i < e.length; i += 2) if (e[i] === 8) { e.splice(i + 2, 0, 62, PICK_ACI[pr.col]); i += 2; }
   }
   if (o.note) {
     const b = projectBounds(p, c);

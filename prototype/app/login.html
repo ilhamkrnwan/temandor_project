@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Masuk · Temandor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="js/ui.js"></script>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body class="min-h-dvh grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] bg-paper text-ink font-sans text-[15px]">
+
+<div class="relative flex flex-col bg-panel">
+  <div class="tape absolute inset-x-0 top-0 h-[3px]"></div>
+  <header class="h-14 px-5 sm:px-8 flex items-center gap-3">
+    <a href="index.html" class="flex items-center gap-2">
+      <span class="grid place-items-center w-8 h-8 rounded bg-ink"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="#f2c200" stroke-width="2.2"><path d="M3 6h7a8 8 0 0 1 8 8v7M3 12h7a2 2 0 0 1 2 2v7"/></svg></span>
+      <span class="font-cond font-bold text-xl tracking-wide">TEMANDOR</span>
+    </a>
+    <span class="ml-auto mock-badge">MOCK</span>
+  </header>
+
+  <main class="flex-1 grid place-items-center px-5 sm:px-8 py-10">
+    <div class="w-full max-w-sm">
+
+      <!-- MASUK -->
+      <section class="state" data-state="masuk" aria-labelledby="t-masuk">
+        <h1 id="t-masuk" class="font-cond font-bold text-4xl leading-none">Masuk</h1>
+        <p class="mt-2 text-muted">Lanjutkan gambar di perangkat mana pun.</p>
+        <button type="button" class="btn-ghost w-full !h-10 mt-7" data-google><svg viewBox="0 0 24 24" class="w-4 h-4" aria-hidden="true"><path fill="#4285F4" d="M22 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.6a4.8 4.8 0 0 1-2.1 3.1v2.6h3.4c2-1.8 3.1-4.5 3.1-7.5z"/><path fill="#34A853" d="M12 22c2.8 0 5.2-.9 6.9-2.5l-3.4-2.6c-.9.6-2.1 1-3.5 1-2.7 0-5-1.8-5.8-4.3H2.7v2.7A10 10 0 0 0 12 22z"/><path fill="#FBBC05" d="M6.2 13.6a6 6 0 0 1 0-3.8V7.1H2.7a10 10 0 0 0 0 9.2z"/><path fill="#EA4335" d="M12 6c1.5 0 2.9.5 4 1.6l3-3A10 10 0 0 0 2.7 7.1l3.5 2.7C7 7.8 9.3 6 12 6z"/></svg>Masuk dengan Google</button>
+        <p class="or-rule my-5">atau pakai email</p>
+        <form class="space-y-4" data-form="masuk">
+          <div><label class="field-label" for="m-email">Email</label><input id="m-email" name="email" type="email" required autocomplete="email" class="field !h-10" placeholder="nama@email.com"></div>
+          <div><div class="flex items-baseline"><label class="field-label mr-auto" for="m-pass">Kata sandi</label><a class="text-xs text-muted hover:text-ink underline underline-offset-2" data-mode="lupa">Lupa kata sandi?</a></div>
+            <input id="m-pass" name="pass" type="password" required minlength="8" autocomplete="current-password" class="field !h-10"></div>
+          <button class="btn-primary w-full !h-10 !text-[15px]">Masuk</button>
+        </form>
+        <p class="mt-6 text-sm text-muted">Belum punya akun? <a class="text-ink font-semibold underline underline-offset-2" data-mode="daftar">Daftar gratis</a></p>
+      </section>
+
+      <!-- DAFTAR -->
+      <section class="state" data-state="daftar" aria-labelledby="t-daftar">
+        <h1 id="t-daftar" class="font-cond font-bold text-4xl leading-none">Buat akun</h1>
+        <p class="mt-2 text-muted">Gratis. Proyek di browser ini tetap aman.</p>
+        <button type="button" class="btn-ghost w-full !h-10 mt-7" data-google><svg viewBox="0 0 24 24" class="w-4 h-4" aria-hidden="true"><path fill="#4285F4" d="M22 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.6a4.8 4.8 0 0 1-2.1 3.1v2.6h3.4c2-1.8 3.1-4.5 3.1-7.5z"/><path fill="#34A853" d="M12 22c2.8 0 5.2-.9 6.9-2.5l-3.4-2.6c-.9.6-2.1 1-3.5 1-2.7 0-5-1.8-5.8-4.3H2.7v2.7A10 10 0 0 0 12 22z"/><path fill="#FBBC05" d="M6.2 13.6a6 6 0 0 1 0-3.8V7.1H2.7a10 10 0 0 0 0 9.2z"/><path fill="#EA4335" d="M12 6c1.5 0 2.9.5 4 1.6l3-3A10 10 0 0 0 2.7 7.1l3.5 2.7C7 7.8 9.3 6 12 6z"/></svg>Daftar dengan Google</button>
+        <p class="or-rule my-5">atau pakai email</p>
+        <form class="space-y-4" data-form="daftar">
+          <div><label class="field-label" for="d-name">Nama</label><input id="d-name" name="name" required autocomplete="name" class="field !h-10" placeholder="mis. Agus Santoso"></div>
+          <div><label class="field-label" for="d-email">Email</label><input id="d-email" name="email" type="email" required autocomplete="email" class="field !h-10" placeholder="nama@email.com"></div>
+          <div><label class="field-label" for="d-pass">Kata sandi</label><input id="d-pass" name="pass" type="password" required minlength="8" autocomplete="new-password" class="field !h-10" aria-describedby="d-pass-hint">
+            <p id="d-pass-hint" class="hint">Minimal 8 karakter.</p></div>
+          <label class="flex items-start gap-2 text-sm"><input type="checkbox" required class="accent-ink mt-1 w-4 h-4"><span>Saya setuju dengan <a class="underline underline-offset-2" href="docs.html">ketentuan &amp; privasi</a>.</span></label>
+          <button class="btn-primary w-full !h-10 !text-[15px]">Buat akun</button>
+        </form>
+        <p class="mt-6 text-sm text-muted">Sudah punya akun? <a class="text-ink font-semibold underline underline-offset-2" data-mode="masuk">Masuk</a></p>
+      </section>
+
+      <!-- LUPA KATA SANDI -->
+      <section class="state" data-state="lupa" aria-labelledby="t-lupa">
+        <h1 id="t-lupa" class="font-cond font-bold text-4xl leading-none">Lupa kata sandi</h1>
+        <p class="mt-2 text-muted">Masukkan email akunmu. Kami kirim link untuk membuat kata sandi baru.</p>
+        <form class="space-y-4 mt-7" data-form="lupa">
+          <div><label class="field-label" for="l-email">Email</label><input id="l-email" name="email" type="email" required autocomplete="email" class="field !h-10" placeholder="nama@email.com"></div>
+          <button class="btn-primary w-full !h-10 !text-[15px]">Kirim link</button>
+        </form>
+        <p class="mt-6 text-sm"><a class="text-muted hover:text-ink underline underline-offset-2" data-mode="masuk">Kembali ke Masuk</a></p>
+      </section>
+
+      <!-- LINK TERKIRIM -->
+      <section class="state" data-state="terkirim" aria-labelledby="t-kirim">
+        <span class="grid place-items-center w-12 h-12 rounded-full bg-hazard"><svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7l9 6 9-6"/><rect x="3" y="5" width="18" height="14" rx="2"/></svg></span>
+        <h1 id="t-kirim" class="mt-5 font-cond font-bold text-4xl leading-none">Cek email</h1>
+        <p class="mt-2 text-muted">Link dikirim ke <b class="text-ink" id="sent-to">emailmu</b>. Tidak ada? Cek folder spam.</p>
+        <a class="btn-ghost w-full !h-10 mt-7" data-mode="masuk">Kembali ke Masuk</a>
+      </section>
+
+      <p class="mt-10 pt-5 border-t border-line text-sm text-muted">Tidak wajib masuk. <a class="text-ink font-semibold underline underline-offset-2" href="index.html">Lanjut tanpa akun</a>: proyek disimpan di browser ini.</p>
+    </div>
+  </main>
+</div>
+
+<aside class="hidden lg:flex flex-col bg-cad text-white/85 p-10 xl:p-14">
+  <div id="art" class="flex-1 min-h-0 rounded-xl overflow-hidden ring-1 ring-white/10"></div>
+  <p class="mt-8 font-cond font-bold text-3xl leading-tight text-white max-w-md">Sketsa duct rapi, langsung jadi DXF untuk AutoCAD.</p>
+  <p class="mt-2 text-white/70 max-w-md">Akun menyimpan proyek dan koneksi AI-mu, jadi bisa lanjut dari HP di lapangan atau laptop di kantor.</p>
+</aside>
+
+<script src="js/geom.js"></script>
+<script src="js/model.js"></script>
+<script src="js/render.js"></script>
+<script src="js/dxf.js"></script>
+<script>
+  // ponytail: semua mock (ADR 0001). Submit = set flag akun di browser, lalu kembali ke halaman asal.
+  const q = new URLSearchParams(location.search);
+  const next = /^[\w-]+\.html(\?[\w=&%.-]*)?$/.test(q.get('next') || '') ? q.get('next') : 'index.html'; // hanya halaman lokal
+  function show(mode, focus = true) {
+    if (!$(`[data-state="${mode}"]`)) mode = 'masuk';
+    $$('[data-state]').forEach(s => s.classList.toggle('on', s.dataset.state === mode));
+    document.title = { masuk: 'Masuk', daftar: 'Buat akun', lupa: 'Lupa kata sandi', terkirim: 'Cek email' }[mode] + ' · Temandor';
+    q.set('mode', mode); history.replaceState(null, '', '?' + q);
+    if (focus) $(`[data-state="${mode}"] input`)?.focus();
+  }
+  $$('[data-mode]').forEach(a => { a.href = '?mode=' + a.dataset.mode; a.onclick = e => { e.preventDefault(); show(a.dataset.mode); }; });
+  const signIn = (name, email) => { localStorage.setItem(USER_KEY, JSON.stringify({ name, email })); location.href = next; };
+  $$('[data-google]').forEach(b => (b.onclick = () => signIn('Mandor Demo', 'mandor@contoh.id')));
+  document.addEventListener('submit', e => {
+    e.preventDefault();
+    const f = e.target, d = Object.fromEntries(new FormData(f)), k = f.dataset.form;
+    if (k === 'masuk') signIn(d.email.split('@')[0], d.email);
+    if (k === 'daftar') signIn(d.name.trim(), d.email);
+    if (k === 'lupa') { $('#sent-to').textContent = d.email; show('terkirim'); }
+  });
+  show(q.get("mode"), false);
+  $('#art').innerHTML = docSVG(demoProject(), { pal: 'screen', sw: 0 }).svg.replace('<svg ', '<svg class="w-full h-full" preserveAspectRatio="xMidYMid meet" ');
+</script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 # AI agents, skills, and local tool state
 .claude/
 .impeccable/
+.taste-skill/
 .agents/
 .agent/
 .skills/
