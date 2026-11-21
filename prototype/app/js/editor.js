@@ -281,6 +281,21 @@ function dimFrom(p1, p2, offPt) {
   return n;
 }
 
+const DRAG_DRAW = new Set(['duct', 'room', 'poly', 'wall', 'dim']); // bisa klik-klik atau seret
+// Goresan bebas (duct & ruangan bebas): sambil diseret, tiap belok 90° jadi titik sudut / elbow.
+// ponytail: hanya belokan siku (mode ORTHO); ORTHO mati = seret biasa titik-ke-titik.
+function freeCorner(p) {
+  const A = draw.pts[draw.pts.length - 1], ax = drag.axis;
+  if (!A) return;
+  const T = 16 / ppu(), dx = p[0] - A[0], dy = p[1] - A[1];
+  if (!ax) { if (Math.hypot(dx, dy) > T) drag.axis = Math.abs(dx) >= Math.abs(dy) ? 'x' : 'y'; return; }
+  if (Math.abs(ax === 'x' ? dy : dx) < T) return; // masih lurus
+  const g = opt.snap ? gridStep() : 1, r = v => Math.round(v / g) * g;
+  const C = ax === 'x' ? [r(p[0]), A[1]] : [A[0], r(p[1])];
+  drag.axis = ax === 'x' ? 'y' : 'x';
+  if (dist(C, A) * ppu() < 8) return; // langsung belok di titik awal: cukup ganti arah
+  draw.pts.push(C); hint();
+}
 function canvasClick(e) {
   if (tool === 'place') return placeGhost();
   if (tool === 'duct') return ductClick();
@@ -492,7 +507,15 @@ svg.addEventListener('pointerdown', e => {
   }
   if (e.button !== 0) return;
   if (tool === 'pen') { drag = { k: 'pen', pts: [cur] }; return svg.setPointerCapture(e.pointerId); }
-  if (tool !== 'select') { snap = snapAt(cur); if (tool === 'place') positionGhost(); return canvasClick(e); }
+  if (tool !== 'select') {
+    snap = snapAt(cur); if (tool === 'place') positionGhost();
+    if (!DRAG_DRAW.has(tool)) return canvasClick(e);
+    // Seret = klik di titik tekan + klik di titik lepas. Tekan di titik terakhir = lanjut seret dari situ (tanpa titik ganda).
+    const last = draw.p0 || draw.pts[draw.pts.length - 1];
+    if (!last || dist(snap.p, last) * ppu() >= 10) canvasClick(e);
+    drag = { k: 'draw', x: e.clientX, y: e.clientY, free: (tool === 'duct' || tool === 'poly') && opt.ortho !== shift, axis: null };
+    return svg.setPointerCapture(e.pointerId);
+  }
 
   const wEl = e.target.closest('[data-warn]');  // klik tanda ! → pilih komponennya, cara perbaikan tampil di panel
   if (wEl) { const w = warns[+wEl.dataset.warn]; sel = new Set([w.id]); if (!panels.side) setPanels({ side: true }); return refresh(); }
@@ -534,6 +557,7 @@ svg.addEventListener('pointermove', e => {
     return setVB([drag.vb[0] - (e.clientX - drag.x) * k, drag.vb[1] - (e.clientY - drag.y) * k, vb[2], vb[3]]);
   }
   if (drag.k === 'pen') { if (dist(drag.pts[drag.pts.length - 1], cur) * ppu() >= 3) drag.pts.push(cur); return overlay(); }
+  if (drag.k === 'draw') { snap = snapAt(cur); drag.moved ||= Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 8; if (drag.free) freeCorner(cur); return overlay(); }
   if (drag.k === 'move') {
     if (!drag.moved && dist(cur, drag.start) * ppu() < 4) return;
     drag.moved = true;
@@ -568,11 +592,17 @@ svg.addEventListener('pointermove', e => {
   overlay(); // kotak seleksi
 });
 
-svg.addEventListener('pointerup', () => {
+svg.addEventListener('pointerup', e => {
   const d = drag;
   drag = null;
   svg.classList.remove('panning');
   if (!d) return;
+  if (d.k === 'draw') {
+    if (!d.moved || !DRAG_DRAW.has(tool)) return overlay(); // gerak kecil = klik biasa
+    // goresan bebas ruangan: lepas dekat titik awal = langsung tutup
+    if (tool === 'poly' && d.free && draw.pts.length >= 3 && dist(cur, draw.pts[0]) * ppu() < 24) return finishPoly();
+    canvasClick(e); return overlay();
+  }
   if (d.k === 'pen') {
     const [x, y] = d.pts[0];
     if (d.pts.length > 1) commit(() => P.nodes.push(mk('sketch', { x: Math.round(x), y: Math.round(y), pts: d.pts.map(p => [Math.round(p[0] - x), Math.round(p[1] - y)]) })));
@@ -602,7 +632,9 @@ svg.addEventListener('pointerleave', () => { inside = false; $('#tip').style.dis
 svg.addEventListener('dblclick', e => {
   if (draw && draw.k === 'duct') return finishDuct();
   if (draw && draw.k === 'poly') return finishPoly();
-  const el = tool === 'select' && e.target.closest('#world [data-id]'), n = el && node(el.dataset.id);
+  // setPointerCapture di pointerdown bikin e.target = <svg>, jadi cari elemen di bawah kursor
+  const hit = document.elementFromPoint(e.clientX, e.clientY);
+  const el = tool === 'select' && hit && hit.closest('#world [data-id]'), n = el && node(el.dataset.id);
   if (!n || locked(n)) return;
   if (n.g && sel.size > 1) { sel = new Set([n.id]); return refresh(); } // masuk ke dalam group
   if (n.type === 'room' || n.type === 'text' || n.type === 'note') inlineEdit(n, e);
@@ -612,9 +644,9 @@ function inlineEdit(n, e) {
   const box = $('#canvas').getBoundingClientRect(), inp = $('#inline'), k = n.type === 'room' ? 'name' : 's';
   inp.value = n[k];
   Object.assign(inp.style, { display: 'block', left: Math.min(e.clientX - box.left, box.width - 230) + 'px', top: e.clientY - box.top - 18 + 'px' });
-  inp.focus(); inp.select();
+  inp.focus(); inp.select(); placeBar();
   inp.onkeydown = ev => { if (ev.key === 'Enter') inp.blur(); if (ev.key === 'Escape') { inp.value = n[k]; inp.blur(); } };
-  inp.onblur = () => { inp.style.display = 'none'; const v = inp.value.trim(); if (v && v !== n[k]) commit(() => { n[k] = v; }); };
+  inp.onblur = () => { inp.style.display = 'none'; const v = inp.value.trim(); if (v && v !== n[k]) commit(() => { n[k] = v; }); else placeBar(); };
 }
 // Tooltip tanda warning (langsung muncul saat kursor di atas !)
 function tipAt(e) {
@@ -742,8 +774,22 @@ function barUI(ns) {
         ['door', 'win', 'column', 'partition'].map(t => citem('add-' + t, TYPES[t].icon, TYPES[t].name)).join('')) + SEP;
   } else if (n.host) {
     h = (n.type === 'door' ? cbtn('hinge', ic('hinge') + 'Engsel', 'Balik engsel kiri/kanan (M)') + cbtn('swing', ic('swing') + 'Arah buka', 'Buka ke dalam/luar (R)') : '') + cbtn('detach', ic('detach') + 'Lepas', 'Lepas dari dinding') + SEP;
-  } else h = cbtn('rotr', ic('rot'), 'Putar 90° (R)') + cbtn('mirror', ic('mir'), 'Cermin (M)') + SEP;
+  } else if (n.type === 'text' || n.type === 'note') h = textBar(n) + SEP;
+  else h = cbtn('rotr', ic('rot'), 'Putar 90° (R)') + cbtn('mirror', ic('mir'), 'Cermin (M)') + SEP;
   return h + tail;
+}
+// Gaya teks langsung dari toolbar (field sama dengan panel Properti)
+const pickCol = c => (c ? PAL[pal === 'screen' ? 'screen' : 'paper'].pick[c] : 'transparent');
+const dot = c => `<span class="cb-dot" style="background:${pickCol(c)}">${c ? '' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 19 19 5"/></svg>'}</span>`;
+const mitem = (act, inner, on) => `<button class="cm-item" role="menuitem" data-act="${act}"${on ? ' aria-checked="true"' : ''}>${inner}</button>`;
+function textBar(n) {
+  const v = k => n[k] ?? TYPES[n.type].def[k], tz = FIELDS.tz[2], al = FIELDS.al[2];
+  const tog = (k, t, inner) => `<button class="cb" data-act="tog-${k}" title="${t}" aria-label="${t}" aria-pressed="${!!n[k]}">${inner}</button>`;
+  return cbtn('edit', 'Edit', 'Ubah isi teks (klik ganda)') + SEP +
+    cdrop('tz', (tz.find(([k]) => k === v('tz')) || tz[1])[1], 'Ukuran teks', tz.map(([k, t]) => mitem('set-tz-' + k, t, k === v('tz'))).join('')) +
+    cdrop('col', dot(v('col') || ''), 'Warna', PICKS.map(([c, t]) => mitem('set-col-' + c, dot(c) + t, c === (v('col') || ''))).join('')) +
+    (n.type === 'text' ? cdrop('al', (al.find(([k]) => k === v('al')) || al[0])[1], 'Rata', al.map(([k, t]) => mitem('set-al-' + k, t, k === v('al'))).join('')) : '') + SEP +
+    STYLES.map(([k, t, inner]) => tog(k, t, inner)).join('');
 }
 function placeBar() {
   const bar = $('#ctxbar'), ns = selNodes();
@@ -1017,6 +1063,10 @@ function doAct(act) {
   if (act === 'ungroup') ungroupSel();
   if (act.startsWith('align-')) alignSel(act.slice(6));
   if (act === 'flip') commit(() => selNodes().forEach(n => { n.flip = !n.flip; }));
+  const sv = act.match(/^set-(\w+)-(.*)$/);
+  if (sv) commit(() => selNodes().forEach(n => { n[sv[1]] = sv[2]; }));
+  if (act.startsWith('tog-')) { const k = act.slice(4), on = !selNodes().every(n => n[k]); commit(() => selNodes().forEach(n => { n[k] = on; })); }
+  if (act === 'edit') { const n = selNodes()[0], r = $('#ctxbar').getBoundingClientRect(); if (n) inlineEdit(n, { clientX: r.left, clientY: r.bottom + 30 }); }
 }
 
 // ================= Layer, warning, status =================
@@ -1077,9 +1127,9 @@ $('#lib-groups').innerHTML = LIBRARY.map(([g, ts]) => `<details class="lib-group
 $('#lib').addEventListener('click', e => { const b = e.target.closest('[data-place]'); if (b) setTool('place', b.dataset.place); });
 // Menu Alat: alat gambar (Pilih & Geser ada di bar kanan-bawah)
 const TOOL_CARDS = [
-  ['duct', 'duct-lurus', 'Gambar jalur duct', 'Klik titik demi titik, elbow dipasang otomatis', 'D'],
+  ['duct', 'duct-lurus', 'Gambar jalur duct', 'Seret bebas (belokan jadi elbow) atau klik titik demi titik', 'D'],
   ['room', 'ruang-rect', 'Ruangan kotak', 'Seret 2 sudut, atau ketik 6x4 + Enter', 'K'],
-  ['poly', 'ruang-l', 'Ruangan bebas', 'Klik tiap sudut: bentuk L, T, custom', 'P'],
+  ['poly', 'ruang-l', 'Ruangan bebas', 'Gambar bebas: seret keliling, lepas di titik awal. Atau klik tiap sudut', 'P'],
   ['wall', 'partisi', 'Partisi', 'Dinding dalam ruangan, bisa bersambung', 'W'],
   ['dim', 'dimensi', 'Ukur / dimensi', 'Klik 2 titik, lalu posisi garis', 'U'],
   ['pen', 'coretan', 'Coretan tangan', 'Sketsa bebas untuk tanda & catatan', 'B'],
