@@ -12,17 +12,17 @@ Tool web untuk membantu **mandor pemula** membuat sketsa 2D jalur ducting dan ve
 
 ## Menjalankan aplikasi real
 
-Butuh Node 26 (`.nvmrc`) dan pnpm 12.
+Butuh Bun 1.4 (`packageManager` di `package.json`) dan Node 26 (`.nvmrc`) untuk tooling.
 
 ```bash
-pnpm install
-pnpm dev        # http://localhost:3000
-pnpm generate   # .output/public (situs statis)
-pnpm preview    # pratinjau .output/public di http://localhost:3000 (server statis kecil)
-pnpm lint
-pnpm typecheck
-pnpm test       # Vitest: core CAD + komponen Nuxt
-pnpm test:e2e   # Playwright: Chromium desktop + viewport HP
+bun install
+bun run dev        # http://localhost:3000
+bun run generate   # .output/public (situs statis)
+bun run preview    # pratinjau .output/public di http://localhost:3000 (server statis kecil)
+bun run lint
+bun run typecheck
+bun run test       # Vitest: core CAD + komponen Nuxt
+bun run test:e2e   # Playwright: Chromium desktop + viewport HP
 ```
 
 TypeScript dipakai di **6.0.3**, bukan 7.0.2: `vue-tsc` 3.3.14 belum mendukung TypeScript 7 (`./lib/tsc` tidak diekspor). Naikkan lagi setelah `vue-tsc` mendukung.

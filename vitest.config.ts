@@ -17,7 +17,7 @@ export default defineConfig({
           include: ['test/nuxt/**/*.nuxt.{test,spec}.ts'],
           environment: 'nuxt',
           // Nuxt env boot on a cold cache takes longer than Vitest's 5s default.
-          testTimeout: 30_000,
+          testTimeout: 60_000,
         },
       }),
     ],

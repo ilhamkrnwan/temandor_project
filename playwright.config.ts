@@ -16,7 +16,7 @@ export default defineConfig({
     { name: 'hp', use: { ...devices['Pixel 5'] } },
   ],
   webServer: {
-    command: 'pnpm generate && pnpm preview',
+    command: 'bun run generate && bun run preview',
     url: 'http://localhost:3100',
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,

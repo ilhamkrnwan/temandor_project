@@ -11,21 +11,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
 
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
-          cache: pnpm
 
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm lint
-      - run: pnpm typecheck
-      - run: pnpm test
-      - run: pnpm generate
-      - run: pnpm exec playwright install --with-deps chromium
-      - run: pnpm test:e2e
-      - run: node prototype/app/test.js
+      - run: bun install --frozen-lockfile
+      - run: bun run lint
+      - run: bun run typecheck
+      - run: bun run test
+      - run: bun run generate
+      - run: bunx playwright install --with-deps chromium
+      - run: bun run test:e2e
+      - run: bun prototype/app/test.js
 
       - uses: actions/upload-artifact@v4
         if: failure()
