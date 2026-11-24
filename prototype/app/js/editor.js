@@ -46,10 +46,12 @@ let saveTimer;
 function persist() {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
+    saveTimer = 0;
     try { saveProject(P); $('#saved').textContent = 'Tersimpan ' + new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }); }
     catch { toast('Gagal menyimpan: penyimpanan browser penuh. Export .json sebagai cadangan.'); }
   }, 250);
 }
+addEventListener('pagehide', () => { if (saveTimer) { clearTimeout(saveTimer); try { saveProject(P); } catch { /* penuh: sudah diperingatkan */ } } }); // pindah proyek sebelum autosave jalan
 function pushHist(s) { hist.push(s); if (hist.length > 200) hist.shift(); fut.length = 0; }
 function commit(fn) {
   const before = JSON.stringify(P);
@@ -279,6 +281,21 @@ function dimFrom(p1, p2, offPt) {
   return n;
 }
 
+const DRAG_DRAW = new Set(['duct', 'room', 'poly', 'wall', 'dim']); // bisa klik-klik atau seret
+// Goresan bebas (duct & ruangan bebas): sambil diseret, tiap belok 90° jadi titik sudut / elbow.
+// ponytail: hanya belokan siku (mode ORTHO); ORTHO mati = seret biasa titik-ke-titik.
+function freeCorner(p) {
+  const A = draw.pts[draw.pts.length - 1], ax = drag.axis;
+  if (!A) return;
+  const T = 16 / ppu(), dx = p[0] - A[0], dy = p[1] - A[1];
+  if (!ax) { if (Math.hypot(dx, dy) > T) drag.axis = Math.abs(dx) >= Math.abs(dy) ? 'x' : 'y'; return; }
+  if (Math.abs(ax === 'x' ? dy : dx) < T) return; // masih lurus
+  const g = opt.snap ? gridStep() : 1, r = v => Math.round(v / g) * g;
+  const C = ax === 'x' ? [r(p[0]), A[1]] : [A[0], r(p[1])];
+  drag.axis = ax === 'x' ? 'y' : 'x';
+  if (dist(C, A) * ppu() < 8) return; // langsung belok di titik awal: cukup ganti arah
+  draw.pts.push(C); hint();
+}
 function canvasClick(e) {
   if (tool === 'place') return placeGhost();
   if (tool === 'duct') return ductClick();
@@ -303,8 +320,8 @@ function canvasClick(e) {
   if (tool === 'text') newText(sp(), e);
 }
 // Teks baru langsung bisa diketik di kanvas (tanpa popup)
-function newText(p, e, th = 0, s = 'Teks') {
-  const n = mk('text', { x: p[0], y: p[1], s, th });
+function newText(p, e, o = {}) {
+  const n = mk('text', { x: p[0], y: p[1], s: 'Teks', ...o });
   setTool('select');
   commit(() => P.nodes.push(n));
   sel = new Set([n.id]); refresh();
@@ -312,7 +329,7 @@ function newText(p, e, th = 0, s = 'Teks') {
 }
 function addText(m) {
   const r = svg.getBoundingClientRect(), e = { clientX: r.left + r.width / 2 - 60, clientY: r.top + r.height / 2 }, p = toWorld(e);
-  newText(p, e, m === 1 ? 0 : Math.round(ctx.th * m), m >= 2 ? 'Judul' : m > 1 ? 'Subjudul' : 'Teks');
+  newText(p, e, m >= 2 ? { tz: '2.2', b: true, s: 'Judul' } : m > 1 ? { tz: '1.5', s: 'Subjudul' } : {}); // ukuran ikut skala gambar
 }
 
 // Ketikan di baris perintah: panjang duct, ukuran ruangan, atau nama perintah
@@ -348,6 +365,7 @@ function typed(raw) {
   if (c === 'Z' || c === 'ZOOM') return fit();
   if (c === 'ZS') return zoomSel();
   if (c === 'U' || c === 'UNDO') return undo();
+  if (c === 'BOQ' || c === 'MATERIAL') return openBoq();
   if (COMMANDS[c]) return setTool(COMMANDS[c]);
   toast(`Perintah "${v}" tidak dikenal. Coba: L (duct), REC (ruangan), PL (ruangan bebas), WALL (partisi), DIM, TEXT, Z`);
 }
@@ -379,7 +397,11 @@ function mirrorSel() {
   const b = bboxOf(ns), cx = (b[0] + b[2]) / 2;
   commit(() => ns.forEach(n => { n.x = 2 * cx - n.x; n.rot = norm(180 - (n.rot || 0)); n.mir = !n.mir; }));
 }
-function delSel() { const ids = new Set(selNodes().filter(n => !locked(n)).map(n => n.id)); if (!ids.size) return; commit(() => { P.nodes = P.nodes.filter(n => !ids.has(n.id)); }); sel.clear(); refresh(); }
+function delSel() {
+  const ids = new Set(selNodes().filter(n => !locked(n)).map(n => n.id)); if (!ids.size) return;
+  commit(() => { P.nodes = P.nodes.filter(n => !ids.has(n.id)); }); sel.clear(); refresh();
+  toast(`${ids.size} komponen dihapus`, { label: 'Urungkan', fn: undo }); // salah tap di HP bisa dibatalkan
+}
 let clip = null;
 function copySel() { const ns = selNodes(); if (ns.length) { clip = structuredClone(ns); toast(`${ns.length} komponen disalin`); } }
 function paste(at) {
@@ -428,6 +450,41 @@ function zoomSel() {
 function nudge(dx, dy) { const ns = selNodes().filter(n => !locked(n)); if (ns.length) commit(() => ns.forEach(n => { n.x += dx; n.y += dy; })); }
 
 // ================= Pointer =================
+// Dua jari (HP/tablet): zoom + geser seperti peta. Satu jari tetap = alat aktif (ADR 0004).
+// ponytail: titik duct/komponen yang sudah ditaruh jari pertama tidak dibatalkan; tanpa inersia.
+const touches = new Map();
+let pinch = null;
+const touchMid = () => { const [a, b] = touches.values(); return { clientX: (a[0] + b[0]) / 2, clientY: (a[1] + b[1]) / 2, d: Math.hypot(a[0] - b[0], a[1] - b[1]) || 1 }; };
+svg.addEventListener('pointerdown', e => {
+  if (e.pointerType !== 'touch') return;
+  touches.set(e.pointerId, [e.clientX, e.clientY]);
+  if (touches.size !== 2) return;
+  e.stopImmediatePropagation();
+  if (drag) { // jari kedua: batalkan gerakan satu jari yang sedang jalan
+    if (drag.pre && drag.moved) { P = JSON.parse(drag.pre); sel = new Set([...sel].filter(node)); }
+    drag = null; svg.classList.remove('panning'); refresh();
+  }
+  cancelAnimationFrame(vbAnim);
+  pinch = touchMid();
+}, true);
+svg.addEventListener('pointermove', e => {
+  if (!touches.has(e.pointerId)) return;
+  touches.set(e.pointerId, [e.clientX, e.clientY]);
+  if (!pinch || touches.size !== 2) return;
+  e.stopImmediatePropagation();
+  const m = touchMid(), u = ppu(), k = pinch.d / m.d;
+  setVB([vb[0] - (m.clientX - pinch.clientX) / u, vb[1] - (m.clientY - pinch.clientY) / u, vb[2], vb[3]]);
+  const p = toWorld(m);
+  setVB([p[0] - (p[0] - vb[0]) * k, p[1] - (p[1] - vb[1]) * k, vb[2] * k, vb[3] * k]);
+  pinch = m;
+}, true);
+const touchEnd = e => {
+  if (!touches.delete(e.pointerId) || !pinch) return;
+  e.stopImmediatePropagation();
+  if (touches.size < 2) pinch = null;
+};
+svg.addEventListener('pointerup', touchEnd, true);
+svg.addEventListener('pointercancel', touchEnd, true);
 let lastGrip = null;
 svg.addEventListener('contextmenu', e => e.preventDefault());
 svg.addEventListener('pointerdown', e => {
@@ -450,7 +507,15 @@ svg.addEventListener('pointerdown', e => {
   }
   if (e.button !== 0) return;
   if (tool === 'pen') { drag = { k: 'pen', pts: [cur] }; return svg.setPointerCapture(e.pointerId); }
-  if (tool !== 'select') { snap = snapAt(cur); if (tool === 'place') positionGhost(); return canvasClick(e); }
+  if (tool !== 'select') {
+    snap = snapAt(cur); if (tool === 'place') positionGhost();
+    if (!DRAG_DRAW.has(tool)) return canvasClick(e);
+    // Seret = klik di titik tekan + klik di titik lepas. Tekan di titik terakhir = lanjut seret dari situ (tanpa titik ganda).
+    const last = draw.p0 || draw.pts[draw.pts.length - 1];
+    if (!last || dist(snap.p, last) * ppu() >= 10) canvasClick(e);
+    drag = { k: 'draw', x: e.clientX, y: e.clientY, free: (tool === 'duct' || tool === 'poly') && opt.ortho !== shift, axis: null };
+    return svg.setPointerCapture(e.pointerId);
+  }
 
   const wEl = e.target.closest('[data-warn]');  // klik tanda ! → pilih komponennya, cara perbaikan tampil di panel
   if (wEl) { const w = warns[+wEl.dataset.warn]; sel = new Set([w.id]); if (!panels.side) setPanels({ side: true }); return refresh(); }
@@ -492,6 +557,7 @@ svg.addEventListener('pointermove', e => {
     return setVB([drag.vb[0] - (e.clientX - drag.x) * k, drag.vb[1] - (e.clientY - drag.y) * k, vb[2], vb[3]]);
   }
   if (drag.k === 'pen') { if (dist(drag.pts[drag.pts.length - 1], cur) * ppu() >= 3) drag.pts.push(cur); return overlay(); }
+  if (drag.k === 'draw') { snap = snapAt(cur); drag.moved ||= Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 8; if (drag.free) freeCorner(cur); return overlay(); }
   if (drag.k === 'move') {
     if (!drag.moved && dist(cur, drag.start) * ppu() < 4) return;
     drag.moved = true;
@@ -526,11 +592,17 @@ svg.addEventListener('pointermove', e => {
   overlay(); // kotak seleksi
 });
 
-svg.addEventListener('pointerup', () => {
+svg.addEventListener('pointerup', e => {
   const d = drag;
   drag = null;
   svg.classList.remove('panning');
   if (!d) return;
+  if (d.k === 'draw') {
+    if (!d.moved || !DRAG_DRAW.has(tool)) return overlay(); // gerak kecil = klik biasa
+    // goresan bebas ruangan: lepas dekat titik awal = langsung tutup
+    if (tool === 'poly' && d.free && draw.pts.length >= 3 && dist(cur, draw.pts[0]) * ppu() < 24) return finishPoly();
+    canvasClick(e); return overlay();
+  }
   if (d.k === 'pen') {
     const [x, y] = d.pts[0];
     if (d.pts.length > 1) commit(() => P.nodes.push(mk('sketch', { x: Math.round(x), y: Math.round(y), pts: d.pts.map(p => [Math.round(p[0] - x), Math.round(p[1] - y)]) })));
@@ -560,19 +632,21 @@ svg.addEventListener('pointerleave', () => { inside = false; $('#tip').style.dis
 svg.addEventListener('dblclick', e => {
   if (draw && draw.k === 'duct') return finishDuct();
   if (draw && draw.k === 'poly') return finishPoly();
-  const el = tool === 'select' && e.target.closest('#world [data-id]'), n = el && node(el.dataset.id);
+  // setPointerCapture di pointerdown bikin e.target = <svg>, jadi cari elemen di bawah kursor
+  const hit = document.elementFromPoint(e.clientX, e.clientY);
+  const el = tool === 'select' && hit && hit.closest('#world [data-id]'), n = el && node(el.dataset.id);
   if (!n || locked(n)) return;
   if (n.g && sel.size > 1) { sel = new Set([n.id]); return refresh(); } // masuk ke dalam group
-  if (n.type === 'room' || n.type === 'text') inlineEdit(n, e);
+  if (n.type === 'room' || n.type === 'text' || n.type === 'note') inlineEdit(n, e);
 });
 // Ganti nama ruangan / isi teks langsung di kanvas
 function inlineEdit(n, e) {
   const box = $('#canvas').getBoundingClientRect(), inp = $('#inline'), k = n.type === 'room' ? 'name' : 's';
   inp.value = n[k];
   Object.assign(inp.style, { display: 'block', left: Math.min(e.clientX - box.left, box.width - 230) + 'px', top: e.clientY - box.top - 18 + 'px' });
-  inp.focus(); inp.select();
+  inp.focus(); inp.select(); placeBar();
   inp.onkeydown = ev => { if (ev.key === 'Enter') inp.blur(); if (ev.key === 'Escape') { inp.value = n[k]; inp.blur(); } };
-  inp.onblur = () => { inp.style.display = 'none'; const v = inp.value.trim(); if (v && v !== n[k]) commit(() => { n[k] = v; }); };
+  inp.onblur = () => { inp.style.display = 'none'; const v = inp.value.trim(); if (v && v !== n[k]) commit(() => { n[k] = v; }); else placeBar(); };
 }
 // Tooltip tanda warning (langsung muncul saat kursor di atas !)
 function tipAt(e) {
@@ -671,10 +745,18 @@ const IC = {
   dup: '<path d="M8 8h12v12H8zM4 16V4h12"/>', del: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
   rot: '<path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/>', mir: '<path d="M12 3v18M8 7 3 12l5 5M16 7l5 5-5 5"/>',
   hinge: '<path d="M4 20V4M4 4a16 16 0 0 1 16 16M4 20h16"/>', swing: '<path d="M12 3v18M7 8l5-5 5 5M7 16l5 5 5-5"/>', detach: '<path d="M3 12h7M14 12h7M10 8v8M14 8v8"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>', chev: '<path d="m7 10 5 5 5-5"/>',
 };
 const ic = k => `<svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">${IC[k]}</svg>`;
 const cbtn = (act, inner, title, cls = '') => `<button class="cb${cls}" data-act="${act}" title="${title}" aria-label="${title}">${inner}</button>`;
 const SEP = '<span class="cb-sep"></span>';
+// Dropdown di toolbar melayang: aksi sejenis dikumpulkan supaya bar tetap pendek
+const cdrop = (id, inner, title, items) => `<span class="cb-drop"><button class="cb" data-drop="${id}" aria-haspopup="menu" aria-expanded="false" aria-controls="cbm-${id}" title="${title}">${inner}<span class="cb-chev">${ic('chev')}</span></button>
+  <span class="cb-menu" id="cbm-${id}" role="menu" aria-label="${title}" hidden>${items}</span></span>`;
+const citem = (act, img, label) => `<button class="cm-item" role="menuitem" data-act="${act}"><img src="assets/svg/${img}.svg" alt="" class="w-5 h-5">${label}</button>`;
+function dropOpen(id) { // id kosong = tutup semua
+  $$('#ctxbar [data-drop]').forEach(b => { const on = b.dataset.drop === id && b.getAttribute('aria-expanded') !== 'true'; b.setAttribute('aria-expanded', on); $('#cbm-' + b.dataset.drop).hidden = !on; if (on) $('#cbm-' + id + ' [role=menuitem]').focus(); });
+}
 function barUI(ns) {
   if (!ns.length) return '';
   if (ns.every(n => n.lock)) return cbtn('unlock', ic('unlock') + 'Buka kunci', 'Buka kunci');
@@ -686,12 +768,28 @@ function barUI(ns) {
   const n = ns[0];
   let h = '';
   if (n.type === 'room') {
-    h = Object.keys(ROOM_SHAPES).map(k => cbtn('shape-' + k, `<img src="assets/svg/ruang-${k.toLowerCase()}.svg" alt="">`, ROOM_SHAPES[k][0])).join('') + SEP +
-      ['door', 'win', 'column', 'partition'].map(t => cbtn('add-' + t, `<img src="assets/svg/${TYPES[t].icon}.svg" alt="">${TYPES[t].name}`, 'Tambah ' + TYPES[t].name.toLowerCase())).join('') + SEP;
+    h = cdrop('shape', '<img src="assets/svg/ruang-l.svg" alt="">Bentuk', 'Ganti bentuk ruangan',
+        Object.keys(ROOM_SHAPES).map(k => citem('shape-' + k, 'ruang-' + k.toLowerCase(), ROOM_SHAPES[k][0])).join('')) +
+      cdrop('add', ic('plus') + 'Tambah', 'Tambah ke ruangan',
+        ['door', 'win', 'column', 'partition'].map(t => citem('add-' + t, TYPES[t].icon, TYPES[t].name)).join('')) + SEP;
   } else if (n.host) {
     h = (n.type === 'door' ? cbtn('hinge', ic('hinge') + 'Engsel', 'Balik engsel kiri/kanan (M)') + cbtn('swing', ic('swing') + 'Arah buka', 'Buka ke dalam/luar (R)') : '') + cbtn('detach', ic('detach') + 'Lepas', 'Lepas dari dinding') + SEP;
-  } else h = cbtn('rotr', ic('rot'), 'Putar 90° (R)') + cbtn('mirror', ic('mir'), 'Cermin (M)') + SEP;
+  } else if (n.type === 'text' || n.type === 'note') h = textBar(n) + SEP;
+  else h = cbtn('rotr', ic('rot'), 'Putar 90° (R)') + cbtn('mirror', ic('mir'), 'Cermin (M)') + SEP;
   return h + tail;
+}
+// Gaya teks langsung dari toolbar (field sama dengan panel Properti)
+const pickCol = c => (c ? PAL[pal === 'screen' ? 'screen' : 'paper'].pick[c] : 'transparent');
+const dot = c => `<span class="cb-dot" style="background:${pickCol(c)}">${c ? '' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 19 19 5"/></svg>'}</span>`;
+const mitem = (act, inner, on) => `<button class="cm-item" role="menuitem" data-act="${act}"${on ? ' aria-checked="true"' : ''}>${inner}</button>`;
+function textBar(n) {
+  const v = k => n[k] ?? TYPES[n.type].def[k], tz = FIELDS.tz[2], al = FIELDS.al[2];
+  const tog = (k, t, inner) => `<button class="cb" data-act="tog-${k}" title="${t}" aria-label="${t}" aria-pressed="${!!n[k]}">${inner}</button>`;
+  return cbtn('edit', 'Edit', 'Ubah isi teks (klik ganda)') + SEP +
+    cdrop('tz', (tz.find(([k]) => k === v('tz')) || tz[1])[1], 'Ukuran teks', tz.map(([k, t]) => mitem('set-tz-' + k, t, k === v('tz'))).join('')) +
+    cdrop('col', dot(v('col') || ''), 'Warna', PICKS.map(([c, t]) => mitem('set-col-' + c, dot(c) + t, c === (v('col') || ''))).join('')) +
+    (n.type === 'text' ? cdrop('al', (al.find(([k]) => k === v('al')) || al[0])[1], 'Rata', al.map(([k, t]) => mitem('set-al-' + k, t, k === v('al'))).join('')) : '') + SEP +
+    STYLES.map(([k, t, inner]) => tog(k, t, inner)).join('');
 }
 function placeBar() {
   const bar = $('#ctxbar'), ns = selNodes();
@@ -728,15 +826,18 @@ function openMenu(e) {
 }
 function closeMenu() { $('#ctxmenu').style.display = 'none'; }
 $('#ctxmenu').addEventListener('pointerdown', e => e.stopPropagation());
-document.addEventListener('pointerdown', e => { if (e.button !== 2 && !e.target.closest('#ctxmenu')) closeMenu(); });
+document.addEventListener('pointerdown', e => { if (e.button !== 2 && !e.target.closest('#ctxmenu')) closeMenu(); if (!e.target.closest('.cb-drop')) dropOpen(''); });
 
 // ================= Panel properti =================
 const FIELDS = {
   sys: ['Sistem', 'sys'], size: ['Ukuran', 'size', ['w', 'h']], size2: ['Ukuran ujung b', 'size', ['w2', 'h2']], bsize: ['Ukuran cabang', 'size', ['bw', 'bh']],
-  L: ['Panjang', 'num', 'mm'], angle: ['Sudut belok', 'sel', [90, 60, 45, 30, 22.5]], elev: ['Elevasi dasar duct (BOD)', 'num', 'mm'],
+  L: ['Panjang', 'num', 'mm'], angle: ['Sudut belok (5–150°)', 'ang', [90, 60, 45, 30, 22.5, 15]], elev: ['Elevasi dasar duct (BOD)', 'num', 'mm'],
+  et: ['Tipe elbow', 'opt', [['r', 'Radius'], ['sq', 'Siku + vane']]], rr: ['Radius (R ÷ lebar)', 'opt', [['1', '1,0 × W'], ['1.5', '1,5 × W']]],
+  tz: ['Ukuran teks', 'opt', [['0.75', 'Kecil'], ['1', 'Sedang'], ['1.5', 'Besar'], ['2.2', 'Judul']]], col: ['Warna', 'col'],
+  al: ['Rata', 'opt', [['start', 'Kiri'], ['middle', 'Tengah'], ['end', 'Kanan']]], sty: ['Gaya', 'sty'],
   flow: ['Debit', 'num', 'flow'], tag: ['Kode', 'text'], F: ['Ukuran muka', 'num', 'mm'], Fx: ['Muka – lebar', 'num', 'mm'], Fy: ['Muka – panjang', 'num', 'mm'],
   B: ['Lebar badan', 'num', 'mm'], name: ['Nama ruangan', 'text'], W: ['Panjang', 'num', 'mm'], H: ['Lebar', 'num', 'mm'], t: ['Tebal dinding', 'num', 'mm'],
-  off: ['Jarak garis ukur', 'num', 'mm'], dims: ['Ukuran otomatis', 'chk'], s: ['Isi teks', 'text'], th: ['Tinggi teks (0 = otomatis)', 'num', 'mm'],
+  off: ['Jarak garis ukur', 'num', 'mm'], dims: ['Ukuran otomatis', 'chk'], s: ['Isi teks', 'text'], th: ['Tinggi khusus (0 = ikut ukuran di atas)', 'num', 'mm'],
   shape: ['Bentuk', 'opt', [['rect', 'Kotak'], ['round', 'Bulat']]], cw: ['Lebar kolom', 'num', 'mm'], cd: ['Tebal kolom (kotak)', 'num', 'mm'],
   kind: ['Jenis pintu', 'opt', [['single', 'Tunggal'], ['double', 'Ganda'], ['sliding', 'Geser']]], dw: ['Lebar bukaan', 'num', 'mm'],
   swing: ['Arah buka', 'opt', [['in', 'Ke dalam'], ['out', 'Ke luar']]], hinge: ['Engsel', 'opt', [['l', 'Kiri'], ['r', 'Kanan']]],
@@ -752,22 +853,32 @@ const row = (label, inner) => `<div><span class="field-label">${label}</span>${i
 const seg = (k, opts, v) => `<div class="seg">${opts.map(([val, lab]) => `<label><input type="radio" name="${k}" data-k="${k}" value="${val}"${val === v ? ' checked' : ''}>${lab}</label>`).join('')}</div>`;
 const numIn = (k, v, unit, attrs = '') => `<div class="field-unit"><input type="number" step="any" data-k="${k}" value="${r2(v)}"${attrs}><span>${unit}</span></div>`;
 
+const PICKS = [['', 'Ikut layer'], ['merah', 'Merah: revisi / cek lapangan'], ['kuning', 'Kuning'], ['hijau', 'Hijau'], ['biru', 'Biru'], ['putih', 'Putih (hitam di kertas)']];
+const STYLES = [['b', 'Tebal (tidak ikut DXF)', '<b>B</b>'], ['it', 'Miring', '<i class="font-serif">I</i>'], ['ul', 'Garis bawah', '<u>U</u>'], ['bx', 'Kotak berlatar: terbaca di atas garis', '<span class="inline-block px-1 ring-1 ring-current rounded-sm leading-tight">A</span>']];
 function fieldHTML(n, key) {
-  const [label, kind, x] = FIELDS[key];
+  const [label, kind, x] = FIELDS[key], v = n[key] ?? TYPES[n.type].def[key]; // komponen lama belum punya parameter baru → pakai bawaan
   if (kind === 'sys') return row(label, seg('sys', [['SA', 'Supply (SA)'], ['EA', 'Exhaust (EA)']], n.sys));
-  if (kind === 'opt') return row(label, seg(key, x, n[key]));
+  if (key === 'rr' && n.et === 'sq') return ''; // radius tidak berlaku untuk elbow siku
+  if (kind === 'opt') return row(label, seg(key, x, v));
+  if (kind === 'col') {
+    const sw = c => (c ? PAL[pal === 'screen' ? 'screen' : 'paper'].pick[c] : 'transparent');
+    return row(label, `<div class="flex gap-1.5" role="radiogroup" aria-label="${label}">${PICKS.map(([c, t]) => `<label class="swatch" title="${t}"><input type="radio" name="col" data-k="col" value="${c}"${c === (v || '') ? ' checked' : ''} aria-label="${t}"><span style="background:${sw(c)}">${c ? '' : '<svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 19 19 5"/></svg>'}</span></label>`).join('')}</div>`);
+  }
+  if (kind === 'sty') return row(label, `<div class="flex gap-1.5">${STYLES.map(([k, t, ic]) => `<label class="sty" title="${t}"><input type="checkbox" data-k="${k}"${n[k] ? ' checked' : ''} aria-label="${t}">${ic}</label>`).join('')}</div>`);
+  if (kind === 'ang') {
+    const mirror = TYPES[n.type].mirror ? `<button class="btn-ghost shrink-0" data-act="mirror" title="Belok ke sisi lain (M)">⇋ Balik</button>` : '';
+    return row(label, `<div class="flex gap-2">${numIn(key, n[key], '°', ' min="5" max="150" step="0.5" list="angle-presets"')}${mirror}</div>
+      <datalist id="angle-presets">${x.map(a => `<option value="${a}">`).join('')}</datalist><div class="flex flex-wrap gap-1 mt-1.5">${x.map(a => `<button class="chip !h-7 !px-2.5 !text-xs" data-ang="${a}" aria-pressed="${a === n[key]}">${String(a).replace('.', ',')}°</button>`).join('')}</div>`);
+  }
   if (kind === 'size') {
-    const round = n.shape === 'round';
+    const round = n.shape === 'round', a = n[x[0]] ?? n.w, b = n[x[1]] ?? n.h; // ujung b elbow: kosong = sama dengan ujung a
     return row(`${label} (${P.unit})`, (key === 'size' && 'shape' in n && TYPES[n.type].duct ? seg('shape', [['rect', 'Kotak'], ['round', 'Bulat']], n.shape) : '') +
-      `<div class="flex items-center gap-2 ${key === 'size' && TYPES[n.type].duct ? 'mt-1.5' : ''}">${numIn(x[0], n[x[0]], round ? 'Ø' : 'W', ' min="0.1"')}${round ? '' : `<span class="text-muted">×</span>${numIn(x[1], n[x[1]], 'H', ' min="0.1"')}`}</div>`);
+      `<div class="flex items-center gap-2 ${key === 'size' && TYPES[n.type].duct ? 'mt-1.5' : ''}">${numIn(x[0], a, round ? 'Ø' : 'W', ' min="0.1"')}${round ? '' : `<span class="text-muted">×</span>${numIn(x[1], b, 'H', ' min="0.1"')}`}</div>` +
+      (n.type === 'elbow' && key === 'size2' ? `<p class="hint">${n.w2 == null ? 'Sama dengan ujung a. Isi ukuran lain untuk elbow mengecil (reducing).' : 'Elbow mengecil: satu potong, tidak perlu transisi.'}</p>` : ''));
   }
   if (kind === 'num') return row(label, numIn(key, n[key], x === 'flow' ? P.fu : x));
   if (kind === 'chk') return row(label, `<label class="flex items-center gap-2"><input type="checkbox" data-k="${key}" class="accent-ink w-4 h-4"${n[key] !== false ? ' checked' : ''}> Tampilkan garis ukur</label>`);
   if (kind === 'text') return row(label, `<input class="field" data-k="${key}" value="${esc(n[key])}">`);
-  if (kind === 'sel') {
-    const opts = x.includes(n[key]) ? x : [n[key], ...x];
-    return row(label, `<div class="flex gap-2"><select class="field" data-k="${key}" data-num>${opts.map(v => `<option value="${v}"${v === n[key] ? ' selected' : ''}>${v}°</option>`).join('')}</select>${TYPES[n.type].mirror ? `<button class="btn-ghost shrink-0" data-act="mirror" title="Belok ke sisi lain (M)">⇋ Balik</button>` : ''}</div>`);
-  }
   return '';
 }
 
@@ -793,20 +904,49 @@ function propsPanel() {
   }
   return propsBody(box, ns, title);
 }
-// Pengaturan proyek (menu Proyek di kiri)
+// Menu Proyek di kiri: tab "Semua proyek" (thumbnail, cari, baru) dan "Proyek ini" (ringkasan + pengaturan).
+// Proyek lain tidak berubah selama di editor → thumbnail-nya dibuat sekali saja.
+const projThumb = p => docSVG(p, { pal, sw: 0 }).svg.replace('<svg ', '<svg class="w-full h-full" preserveAspectRatio="xMidYMid meet" ');
+const OTHERS = listProjects().filter(p => p.id !== P.id).map(p => ({ id: p.id, name: p.name, updated: p.updated, svg: projThumb(p) }));
+let projTab = 'all', projQ = '';
+const projCard = (p, cur) => `<a href="${cur ? '#' : 'editor.html?id=' + p.id}" class="proj-card" data-name="${esc(p.name.toLowerCase())}"${cur ? ' aria-current="page" data-cur' : ''}>
+    <span class="proj-thumb" aria-hidden="true">${p.svg}</span><b class="truncate">${esc(p.name)}</b><small>${cur ? 'Sedang dibuka' : ago(p.updated)}</small></a>`;
 function projUI() {
+  if (!$('[data-pane="proyek"]').classList.contains('on')) return; // tidak terlihat: jangan render thumbnail
+  const tabs = `<div class="seg mb-3" role="radiogroup" aria-label="Tampilan proyek">${[['all', 'Semua proyek'], ['this', 'Proyek ini']].map(([k, t]) => `<label><input type="radio" name="ptab" value="${k}"${projTab === k ? ' checked' : ''}>${t}</label>`).join('')}</div>`;
+  if (projTab === 'all') {
+    $('#proj').innerHTML = tabs + `<div class="flex gap-2 mb-3"><input type="search" class="field" placeholder="Cari proyek…" aria-label="Cari proyek" data-projq value="${esc(projQ)}">
+        <a href="index.html#new" class="btn-primary !h-[2.1rem] !px-2.5 shrink-0" title="Proyek baru" aria-label="Proyek baru"><svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg></a></div>
+      <div class="grid grid-cols-2 gap-2" id="proj-grid">${projCard({ ...P, svg: projThumb(P) }, true)}${OTHERS.map(p => projCard(p)).join('')}</div>
+      <p class="hint text-center !mt-3" id="proj-none" hidden>Tidak ada proyek dengan nama itu.</p>
+      <a href="index.html" class="btn-ghost w-full mt-3">Buka beranda</a>`;
+    return filterProj();
+  }
   const nn = P.nodes.filter(n => n.type !== 'room').length, flows = Object.entries(ctx.flows);
-  $('#proj').innerHTML = `<div class="space-y-4">
-      <dl class="grid grid-cols-2 gap-y-2 text-xs">
+  $('#proj').innerHTML = tabs + `<div class="proj-thumb !h-32 rounded-lg mb-3" aria-hidden="true">${projThumb(P)}</div>
+    <div class="space-y-4">
+      <dl class="grid grid-cols-2 gap-y-1.5 text-xs">
         <dt class="text-muted">Satuan duct</dt><dd class="font-mono text-right">${P.unit}</dd>
         <dt class="text-muted">Komponen</dt><dd class="font-mono text-right">${nn}</dd>
+        <dt class="text-muted">Warning</dt><dd class="font-mono text-right">${warns.length}</dd>
         ${flows.map(([id, f]) => `<dt class="text-muted">${esc(node(id).tag)}</dt><dd class="font-mono text-right">${f} ${P.fu}</dd>`).join('')}
       </dl>
       ${row('Skala gambar', `<select class="field" data-proj="scale">${['1:50', '1:100', '1:200'].map(s => `<option${s === P.scale ? ' selected' : ''}>${s}</option>`).join('')}</select>`)}
       ${row('Gantungan otomatis', `<div class="flex items-center gap-2"><label class="flex items-center gap-2 shrink-0"><input type="checkbox" data-proj="hang-on" class="accent-ink w-4 h-4"${P.hang.on ? ' checked' : ''}> Tiap</label><div class="field-unit flex-1"><input type="number" min="300" step="100" data-proj="hang-sp" value="${P.hang.sp}"><span>mm</span></div></div>`)}
       ${row('Tema kanvas', seg('theme', [['screen', 'Gelap'], ['light', 'Terang']], pal))}
-      <div class="grid grid-cols-2 gap-2 pt-2 border-t border-line"><a class="btn-ghost" href="docs.html" target="_blank">Dokumentasi</a><a class="btn-ghost" href="docs.html#dukung" target="_blank"><span class="text-red-600">♥</span> Dukung</a></div></div>`;
+      <div class="grid grid-cols-2 gap-2 pt-3 border-t border-line"><button class="btn-ghost" data-open="dlg-export">Export</button><button class="btn-ghost" data-boq>Daftar material</button><a class="btn-ghost col-span-2" href="docs.html" target="_blank">Dokumentasi</a></div>
+    </div>`;
 }
+function filterProj() {
+  const q = projQ.trim().toLowerCase(), cards = $$('#proj-grid .proj-card');
+  cards.forEach(c => { c.hidden = !c.dataset.name.includes(q); });
+  $('#proj-none').hidden = cards.some(c => !c.hidden);
+}
+$('#proj').addEventListener('input', e => { if ('projq' in e.target.dataset) { projQ = e.target.value; filterProj(); } });
+$('#proj').addEventListener('click', e => {
+  if (e.target.closest('[data-cur]')) e.preventDefault();
+  const o = e.target.closest('[data-open]'); if (o) $('#' + o.dataset.open).showModal();
+});
 function propsBody(box, ns, title) {
   const actions = `<div class="grid grid-cols-2 gap-2">
     <button class="btn-ghost" data-act="rotl" title="Putar kiri 90°">⟲ Putar</button><button class="btn-ghost" data-act="rotr" title="Putar kanan 90° (R)">⟳ Putar</button>
@@ -853,6 +993,7 @@ function propsBody(box, ns, title) {
 
 $('#proj').addEventListener('change', e => {
   const el = e.target, pk = el.dataset.proj;
+  if (el.name === 'ptab') { projTab = el.value; return projUI(); }
   if (el.dataset.k === 'theme') return setTheme(el.value);
   if (pk) commit(() => {
     if (pk === 'scale') P.scale = el.value;
@@ -868,12 +1009,34 @@ $('#props').addEventListener('change', e => {
   if (isNum && !isFinite(v)) return refresh();
   if (isNum && k !== 'rot' && k !== 'off' && k !== 'th' && k !== 'elev' && k !== 'flow' && v <= 0) { toast('Nilai harus lebih dari 0'); return refresh(); }
   if (k === 'rot') v = norm(v);
+  if (k === 'angle' && (v < 5 || v > 150)) { v = Math.min(150, Math.max(5, v)); toast('Sudut elbow 5–150°'); }
   if (el.closest('[data-spec]')) { spec[k] = v; if (draw) draw.spec[k] = v; if (ghost && k in ghost) ghost[k] = v; return refresh(), hint(); }
-  const ns = selNodes().filter(n => !locked(n));
-  commit(() => ns.forEach(n => { if (n.type === 'room' && (k === 'W' || k === 'H')) resizeRoom(n, k, v); else if (k in n || k === 'rot') n[k] = v; }));
+  setProp(k, v);
 });
-$('#props').addEventListener('click', e => { const a = e.target.closest('[data-act]'); if (a) doAct(a.dataset.act); });
-$('#ctxbar').addEventListener('click', e => { const a = e.target.closest('[data-act]'); if (a) doAct(a.dataset.act); });
+function setProp(k, v) {
+  const ns = selNodes().filter(n => !locked(n));
+  commit(() => ns.forEach(n => {
+    if (n.type === 'room' && (k === 'W' || k === 'H')) return resizeRoom(n, k, v);
+    if (!(k in n || k === 'rot' || k in TYPES[n.type].def)) return; // parameter baru juga boleh untuk komponen lama
+    if ((k === 'w2' || k === 'h2') && n.w2 == null) { n.w2 = n.w; n.h2 = n.h; } // mulai reducing dari ukuran ujung a
+    n[k] = v;
+  }));
+}
+$('#props').addEventListener('click', e => {
+  const g = e.target.closest('[data-ang]'); if (g) return setProp('angle', +g.dataset.ang);
+  const a = e.target.closest('[data-act]'); if (a) doAct(a.dataset.act);
+});
+$('#ctxbar').addEventListener('click', e => {
+  const d = e.target.closest('[data-drop]'); if (d) return dropOpen(d.dataset.drop);
+  const a = e.target.closest('[data-act]'); if (a) { dropOpen(''); doAct(a.dataset.act); }
+});
+$('#ctxbar').addEventListener('keydown', e => { // menu: panah atas/bawah pindah item, Esc tutup & kembali ke tombolnya
+  const m = e.target.closest('.cb-menu'); if (!m) return;
+  const items = $$('[role=menuitem]', m), i = items.indexOf(e.target);
+  e.stopPropagation(); // tombol di dalam menu jangan sampai ke pintasan editor (panah = geser komponen!)
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); items[(i + (e.key === 'ArrowDown' ? 1 : items.length - 1)) % items.length].focus(); }
+  if (e.key === 'Escape') { e.stopPropagation(); const id = m.id.slice(4); dropOpen(''); $(`#ctxbar [data-drop="${id}"]`).focus(); }
+});
 $('#ctxmenu').addEventListener('click', e => { const a = e.target.closest('[data-act]'); if (a) { closeMenu(); doAct(a.dataset.act); } });
 function doAct(act) {
   if (act === 'rotl') rotateSel(-90);
@@ -900,6 +1063,10 @@ function doAct(act) {
   if (act === 'ungroup') ungroupSel();
   if (act.startsWith('align-')) alignSel(act.slice(6));
   if (act === 'flip') commit(() => selNodes().forEach(n => { n.flip = !n.flip; }));
+  const sv = act.match(/^set-(\w+)-(.*)$/);
+  if (sv) commit(() => selNodes().forEach(n => { n[sv[1]] = sv[2]; }));
+  if (act.startsWith('tog-')) { const k = act.slice(4), on = !selNodes().every(n => n[k]); commit(() => selNodes().forEach(n => { n[k] = on; })); }
+  if (act === 'edit') { const n = selNodes()[0], r = $('#ctxbar').getBoundingClientRect(); if (n) inlineEdit(n, { clientX: r.left, clientY: r.bottom + 30 }); }
 }
 
 // ================= Layer, warning, status =================
@@ -925,7 +1092,10 @@ $('#layers').addEventListener('click', e => {
   persist(); refresh();
 });
 
+let lastWarnN = null;
 function warnUI() {
+  if (lastWarnN !== null && lastWarnN !== warns.length) announce(warns.length ? `${warns.length} warning` : 'Tidak ada warning'); // pembaca layar tahu ada masalah baru
+  lastWarnN = warns.length;
   $$('.warn-count').forEach(el => { el.textContent = warns.length; });
   $('#warn-btn').classList.toggle('!text-green-300', !warns.length);
   $('#warn-list').innerHTML = warns.length ? warns.map((w, i) => `<li><button class="warn-item" data-wi="${i}">
@@ -957,9 +1127,9 @@ $('#lib-groups').innerHTML = LIBRARY.map(([g, ts]) => `<details class="lib-group
 $('#lib').addEventListener('click', e => { const b = e.target.closest('[data-place]'); if (b) setTool('place', b.dataset.place); });
 // Menu Alat: alat gambar (Pilih & Geser ada di bar kanan-bawah)
 const TOOL_CARDS = [
-  ['duct', 'duct-lurus', 'Gambar jalur duct', 'Klik titik demi titik, elbow dipasang otomatis', 'D'],
+  ['duct', 'duct-lurus', 'Gambar jalur duct', 'Seret bebas (belokan jadi elbow) atau klik titik demi titik', 'D'],
   ['room', 'ruang-rect', 'Ruangan kotak', 'Seret 2 sudut, atau ketik 6x4 + Enter', 'K'],
-  ['poly', 'ruang-l', 'Ruangan bebas', 'Klik tiap sudut: bentuk L, T, custom', 'P'],
+  ['poly', 'ruang-l', 'Ruangan bebas', 'Gambar bebas: seret keliling, lepas di titik awal. Atau klik tiap sudut', 'P'],
   ['wall', 'partisi', 'Partisi', 'Dinding dalam ruangan, bisa bersambung', 'W'],
   ['dim', 'dimensi', 'Ukur / dimensi', 'Klik 2 titik, lalu posisi garis', 'U'],
   ['pen', 'coretan', 'Coretan tangan', 'Sketsa bebas untuk tanda & catatan', 'B'],
@@ -967,6 +1137,7 @@ const TOOL_CARDS = [
 $('#tool-list').innerHTML = TOOL_CARDS.map(([t, icon, nm, d, k]) => `<button class="tool-card" data-tool="${t}"><img src="assets/svg/${icon}.svg" alt=""><span class="min-w-0"><b>${nm}</b><small>${d}</small></span><kbd>${k}</kbd></button>`).join('') +
   '<p class="hint !mt-3">Pilih & geser kanvas ada di kanan bawah. <kbd>Esc</kbd> kembali ke Pilih.</p>';
 $$('[data-text]').forEach(b => b.addEventListener('click', () => addText(+b.dataset.text)));
+$('[data-note]').onclick = () => { setTool('place', 'note'); toast('Klik titik yang ditunjuk panah. Seret titik biru untuk memindah teksnya.'); };
 const BLANK = new Image();
 BLANK.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 $('#lib-groups').addEventListener('dragstart', e => {
@@ -1009,6 +1180,7 @@ $('#scrim').onclick = () => { document.body.classList.remove('open-lib', 'open-s
 const DESK = matchMedia('(min-width: 1024px)');
 const panels = { lib: true, side: true, cat: 'elemen' };
 try { Object.assign(panels, JSON.parse(localStorage.getItem('temandor.panels') || '{}')); } catch { /* abaikan */ }
+if (!$(`[data-pane="${panels.cat}"]`)) panels.cat = 'elemen'; // mis. menu AI lama (sekarang melayang)
 function setPanels(o) {
   Object.assign(panels, o);
   document.body.classList.toggle('hide-lib', !panels.lib);
@@ -1018,6 +1190,7 @@ function setPanels(o) {
   $$('[data-pane]').forEach(p => p.classList.toggle('on', p.dataset.pane === panels.cat));
   $('#focus').setAttribute('aria-pressed', !panels.lib && !panels.side);
   localStorage.setItem('temandor.panels', JSON.stringify(panels));
+  projUI(); // panel Proyek dirender saat terlihat
 }
 function openCat(c) {
   const b = document.body, open = DESK.matches ? panels.lib : b.classList.contains('open-lib'), close = open && panels.cat === c;
@@ -1036,6 +1209,19 @@ $('#cmd').addEventListener('keydown', e => {
   if (e.key === 'Escape') { e.target.value = ''; e.target.blur(); }
 });
 
+// Keyboard di kanvas: Tab / Shift+Tab pilih komponen berikutnya. Setelah komponen terakhir, Tab keluar dari kanvas (bukan jebakan).
+// ponytail: urutan = urutan gambar, tanpa auto-zoom ke komponen di luar layar; tekan Z untuk zoom ke pilihan.
+function announce(msg) { const r = $('#sr'); r.textContent = ''; requestAnimationFrame(() => { r.textContent = msg; }); }
+function tabSelect(e) {
+  const list = P.nodes.filter(n => visible(n) && !locked(n) && (!n.g || groupIds(n)[0] === n.id)); // satu entri per group
+  let i = sel.size ? list.findIndex(n => sel.has(n.id)) + (e.shiftKey ? -1 : 1) : e.shiftKey ? -1 : 0;
+  if (i < 0 || i >= list.length) { if (sel.size) { sel.clear(); refresh(); } return; } // biarkan fokus keluar
+  e.preventDefault();
+  const n = list[i];
+  if (tool !== 'select') setTool('select');
+  sel = new Set(groupIds(n)); refresh();
+  announce(`${TYPES[n.type].name}${n.name ? ' ' + n.name : n.tag ? ' ' + n.tag : ''} dipilih, ${i + 1} dari ${list.length}. Panah untuk geser, Delete untuk hapus.`);
+}
 const KEYS = { v: 'select', h: 'pan', k: 'room', p: 'poly', w: 'wall', d: 'duct', f: 'fitting', e: 'equip', g: 'diffuser', u: 'dim', t: 'text', b: 'pen' };
 document.addEventListener('keydown', e => {
   const ctrl = e.ctrlKey || e.metaKey, k = e.key.toLowerCase();
@@ -1044,13 +1230,13 @@ document.addEventListener('keydown', e => {
     return;
   }
   if (ctrl) {
-    const act = { '[': () => setPanels({ lib: !panels.lib }), ']': () => setPanels({ side: !panels.side }), z: () => (e.shiftKey ? redo() : undo()), y: redo, c: copySel, v: () => paste(inside ? cur : null), d: () => { copySel(); paste(); }, s: () => $('#save').click(), g: () => (e.shiftKey ? ungroupSel() : groupSel()),
+    const act = { '.': focusMode, '[': () => setPanels({ lib: !panels.lib }), ']': () => setPanels({ side: !panels.side }), z: () => (e.shiftKey ? redo() : undo()), y: redo, c: copySel, v: () => paste(inside ? cur : null), d: () => { copySel(); paste(); }, s: () => $('#save').click(), g: () => (e.shiftKey ? ungroupSel() : groupSel()),
       a: () => { setTool('select'); sel = new Set(P.nodes.filter(n => visible(n) && !locked(n)).map(n => n.id)); refresh(); } }[k];
     if (act) { e.preventDefault(); act(); }
     return;
   }
   if (e.key === '?') return $('#dlg-keys').showModal();
-  if (e.key === 'Tab' && e.target === document.body) { e.preventDefault(); return focusMode(); }
+  if (e.key === 'Tab' && e.target === svg) return tabSelect(e);
   if (e.key === ']' || e.key === '[') return orderSel(e.key === ']');
   const AR = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
   if (AR && sel.size) { e.preventDefault(); const st = e.shiftKey ? 100 : 10; return nudge(AR[0] * st, AR[1] * st); }
@@ -1081,39 +1267,83 @@ document.addEventListener('keydown', e => {
 document.addEventListener('keyup', e => { if (e.key === ' ') spaceDown = false; });
 
 // ================= Export =================
-$('[data-open="dlg-export"]').addEventListener('click', () => {
+document.addEventListener('click', e => { // semua tombol Export (top bar, panel Proyek) mengisi dialog yang sama
+  if (!e.target.closest('[data-open="dlg-export"]')) return;
   const f = $('#form-export');
   $('#exp-layers').innerHTML = LAYERS.map(([k, nm, dxf]) => `<label class="flex items-center gap-2"><input type="checkbox" name="layer" value="${k}"${P.layers[k].on ? ' checked' : ''} class="accent-ink"><span class="font-mono text-xs">${dxf}</span><span class="text-xs text-muted truncate">${nm}</span></label>`).join('');
   f.scale.value = P.scale;
   $('#exp-warn').innerHTML = warns.length ? `<b>!</b><span>Masih ada ${warns.length} warning. Export tetap bisa, tapi sebaiknya dicek dulu.</span>` : '<span>Tidak ada warning.</span>';
   $('#exp-warn').className = warns.length ? 'flex gap-2 rounded-lg bg-red-50 ring-1 ring-red-200 p-3 text-xs text-red-900' : 'flex gap-2 rounded-lg bg-green-50 ring-1 ring-green-200 p-3 text-xs text-green-900';
-  updateExpName();
+  expDone(false); updateExpName();
 });
+// Dua keadaan dialog: pilih format → selesai (nama file + kirim PNG + BOQ)
+function expDone(on, file, hint) {
+  $('#exp-main').hidden = on; $('#exp-done').hidden = !on;
+  $('#exp-cancel').hidden = on; $('#do-export').hidden = on; $('#exp-again').hidden = !on; $('#exp-close').hidden = !on;
+  $('#exp-file').hidden = on;
+  if (on) { $('#exp-done-file').textContent = file; $('#exp-done-hint').textContent = hint; $('#exp-close').focus(); }
+}
+$('#exp-again').onclick = () => { expDone(false); $('#form-export input[name=fmt]:checked').focus(); };
+const expOpts = () => { const f = $('#form-export'); return { layers: new Set($$('input[name=layer]:checked', f).map(i => i.value)), note: f.note.checked }; };
+function pngBlob({ layers, note }) {
+  const { svg: doc, vb: v } = docSVG(P, { pal: 'paper', layers, note }), img = new Image(), W = 3200, H = Math.round(W * v[3] / v[2]);
+  return new Promise((ok, no) => {
+    img.onload = () => { const c = Object.assign(document.createElement('canvas'), { width: W, height: H }); c.getContext('2d').drawImage(img, 0, 0, W, H); c.toBlob(ok); };
+    img.onerror = no;
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(doc);
+  });
+}
+// Kirim PNG: menu bagikan bawaan HP (WhatsApp, Telegram, email). Perangkat tanpa fitur itu → PNG diunduh.
+$('#exp-share').onclick = async () => {
+  const name = slug(P.name) + '.png', file = new File([await pngBlob(expOpts())], name, { type: 'image/png' });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: P.name, text: `${P.name} – sketsa bantu, cek ulang ukuran di lapangan` }); } catch { /* dibatalkan pengguna */ }
+  } else { download(name, file); toast('Perangkat ini belum bisa berbagi langsung. PNG diunduh: kirim lewat WhatsApp Web atau email.'); }
+};
 const updateExpName = () => { $('#exp-file').textContent = slug(P.name) + '.' + $('#form-export').fmt.value; };
 $('#form-export').addEventListener('change', e => {
   if (e.target.name === 'scale') commit(() => { P.scale = e.target.value; });
   updateExpName();
 });
-$('#do-export').addEventListener('click', () => {
-  const f = $('#form-export'), fmt = f.fmt.value, name = slug(P.name);
-  const layers = new Set($$('input[name=layer]:checked', f).map(i => i.value)), note = f.note.checked;
-  if (fmt === 'json') return download(name + '.json', JSON.stringify(P, null, 1), 'application/json');
-  if (fmt === 'dxf') return download(name + '.dxf', toDXF(P, { layers, unit: f.unit.value, note }), 'application/dxf');
-  const { svg: doc, vb: v } = docSVG(P, { pal: 'paper', layers, note });
+const EXP_HINT = {
+  dxf: 'Buka di AutoCAD atau kirim ke drafter. Layer ikut, catatan "sketsa bantu" ada di bawah gambar.',
+  png: 'Siap dikirim lewat chat. Untuk dibuka di AutoCAD, export DXF.',
+  pdf: 'Dialog cetak terbuka di tab baru. Pilih "Simpan sebagai PDF" atau printer.',
+  json: 'Cadangan proyek. Buka lagi lewat "Buka file .json" di daftar proyek.',
+};
+$('#do-export').addEventListener('click', async () => {
+  const f = $('#form-export'), fmt = f.fmt.value, name = slug(P.name), { layers, note } = expOpts(), file = `${name}.${fmt}`;
+  if (fmt === 'json') download(file, JSON.stringify(P, null, 1), 'application/json');
+  if (fmt === 'dxf') download(file, toDXF(P, { layers, unit: f.unit.value, note }), 'application/dxf');
+  if (fmt === 'png') download(file, await pngBlob({ layers, note }));
   if (fmt === 'pdf') {
     const w = window.open('', '_blank');
     if (!w) return toast('Popup diblokir browser. Izinkan popup untuk export PDF.');
-    w.document.write(`<!doctype html><title>${esc(P.name)}</title><style>@page{size:A3 landscape;margin:10mm}html,body{margin:0;height:100%}svg{width:100%;height:100%}</style>${doc}<script>onload=()=>setTimeout(()=>print(),300)<\/script>`);
-    return w.document.close();
+    w.document.write(`<!doctype html><title>${esc(P.name)}</title><style>@page{size:A3 landscape;margin:10mm}html,body{margin:0;height:100%}svg{width:100%;height:100%}</style>${docSVG(P, { pal: 'paper', layers, note }).svg}<script>onload=()=>setTimeout(()=>print(),300)<\/script>`);
+    w.document.close();
   }
-  const img = new Image(), W = 3200, H = Math.round(W * v[3] / v[2]);
-  img.onload = () => {
-    const c = Object.assign(document.createElement('canvas'), { width: W, height: H });
-    c.getContext('2d').drawImage(img, 0, 0, W, H);
-    c.toBlob(b => download(name + '.png', b));
-  };
-  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(doc);
+  expDone(true, fmt === 'pdf' ? 'Tab cetak dibuka' : file, EXP_HINT[fmt]);
 });
+
+// ================= Daftar material (BOQ) =================
+const qtyFmt = r => `${r.qty.toLocaleString('id-ID')} ${r.unit}`;
+function openBoq() {
+  const rows = boq(P), groups = BOQ_ORDER.map(k => [k, rows.filter(r => r.kat === k)]).filter(([, rs]) => rs.length);
+  const m = rows.filter(r => r.unit === 'm').reduce((a, r) => a + r.qty, 0);
+  $('#boq-body').innerHTML = rows.length ? groups.map(([k, rs]) => `<section class="boq-group"><h3>${k}</h3><table class="boq">
+      <thead class="sr-only"><tr><th>Item</th><th>Spesifikasi</th><th>Jumlah</th></tr></thead><tbody>
+      ${rs.map(r => `<tr><td>${esc(r.item)}</td><td class="font-mono">${esc(r.spec)}</td><td class="font-mono text-right whitespace-nowrap">${qtyFmt(r)}</td></tr>`).join('')}</tbody></table></section>`).join('')
+    : '<p class="py-10 text-center text-muted">Belum ada duct atau komponen. Gambar dulu, daftar ini terisi sendiri.</p>';
+  $('#boq-sum').textContent = rows.length ? `${rows.length} baris · duct total ${(Math.round(m * 10) / 10).toLocaleString('id-ID')} m` : '';
+  $('#boq-csv').disabled = $('#boq-copy').disabled = !rows.length;
+  $('#dlg-boq').showModal();
+}
+document.addEventListener('click', e => { if (e.target.closest('[data-boq]')) openBoq(); });
+$('#boq-csv').onclick = () => { download(slug(P.name) + '-material.csv', boqCSV(boq(P)), 'text/csv;charset=utf-8'); toast('CSV diunduh. Buka dengan Excel atau Google Sheets.'); };
+$('#boq-copy').onclick = async () => {
+  const text = `Daftar material – ${P.name}\n` + boq(P).map(r => `• ${r.item} ${r.spec}: ${qtyFmt(r)}`).join('\n') + '\n(dihitung dari sketsa Temandor, cek ulang di lapangan)';
+  try { await navigator.clipboard.writeText(text); toast('Disalin. Tempel di WhatsApp atau catatan.'); } catch { toast('Browser menolak menyalin. Pakai Unduh CSV.'); }
+};
 
 // ================= Mulai =================
 $('#proj-name').value = P.name;

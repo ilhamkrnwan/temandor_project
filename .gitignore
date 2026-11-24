@@ -1,6 +1,7 @@
 # AI agents, skills, and local tool state
 .claude/
 .impeccable/
+.taste-skill/
 .agents/
 .agent/
 .skills/
@@ -18,6 +19,21 @@ AGENTS.md
 .shots*
 tmp/
 temp/
+
+# Nuxt dev/build outputs
+.nuxt/
+.output/
+.nitro/
+.cache/
+.data/
+dist/
+*.tsbuildinfo
+
+# Tests & deploy
+coverage/
+playwright-report/
+test-results/
+.wrangler/
 
 # Dependencies & environments
 node_modules/

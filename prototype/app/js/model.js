@@ -153,6 +153,43 @@ function validate(p, cn) {
   return W;
 }
 
+// ---- Daftar material (BOQ): dihitung dari gambar, bukan diketik ----
+// ponytail: tanpa harga, tanpa faktor sisa potong/sambungan; tambah kolom itu kalau mandor memintanya.
+const BOQ_ORDER = ['Duct', 'Fitting', 'Perlengkapan', 'Equipment'];
+function boq(p) {
+  const U = p.unit, c = ctxOf(p, connect(p)), rows = new Map();
+  const sz = (w, h, shape) => sizeLabel(w, h, shape, U);
+  const add = (kat, item, spec, qty, unit) => {
+    const k = [kat, item, spec, unit].join('|'), r = rows.get(k) || { kat, item, spec, qty: 0, unit };
+    r.qty += qty; rows.set(k, r);
+  };
+  let hang = 0;
+  for (const n of p.nodes) {
+    const T = TYPES[n.type], sys = n.sys ? ' ' + n.sys : '';
+    switch (n.type) {
+      case 'straight': case 'flex': add('Duct', T.name + sys, sz(n.w, n.h, n.shape), n.L / 1000, 'm'); break;
+      case 'elbow': {
+        const red = n.w2 != null && (n.w2 !== n.w || n.h2 !== n.h);
+        add('Fitting', `Elbow ${n.et === 'sq' ? 'siku + vane' : 'radius'}${sys}`, `${sz(n.w, n.h, n.shape)}${red ? ' → ' + sz(n.w2, n.h2, n.shape) : ''} · ${n.angle}°`, 1, 'bh'); break;
+      }
+      case 'transition': add('Fitting', T.name + sys, `${sz(n.w, n.h, n.shape)} → ${sz(n.w2, n.h2, n.shape)}`, 1, 'bh'); break;
+      case 'tee': case 'takeoff': add('Fitting', T.name + sys, `${sz(n.w, n.h, n.shape)} / cabang ${sz(n.bw, n.bh, n.shape)}`, 1, 'bh'); break;
+      case 'endcap': case 'damper': case 'accessdoor': add('Perlengkapan', T.name + sys, sz(n.w, n.h, n.shape), 1, 'bh'); break;
+      case 'diffuser': case 'louver': add('Perlengkapan', T.name + sys, `${n.F}×${n.F} mm`, 1, 'bh'); break;
+      case 'grille': add('Perlengkapan', T.name + sys, `${n.Fx}×${n.Fy} mm`, 1, 'bh'); break;
+      case 'fan': case 'fcu': case 'outdoor': add('Equipment', T.name, n.tag || '', 1, 'unit'); break;
+    }
+    if (T.duct) hang += worldPrims(n, c).filter(pr => pr.layer === 'hanger' && pr.k === 'l').length; // tiap titik gantungan = 1 garis
+  }
+  if (hang) add('Perlengkapan', 'Gantungan duct (rod + support)', c.hang && c.hang.sp ? `tiap ${c.hang.sp} mm` : '', hang, 'titik');
+  return [...rows.values()]
+    .map(r => ({ ...r, qty: r.unit === 'm' ? Math.round(r.qty * 10) / 10 : r.qty }))
+    .sort((a, b) => BOQ_ORDER.indexOf(a.kat) - BOQ_ORDER.indexOf(b.kat) || a.item.localeCompare(b.item) || a.spec.localeCompare(b.spec, 'id', { numeric: true }));
+}
+// CSV untuk Excel (pemisah ; dan koma desimal, seperti Excel berbahasa Indonesia)
+const boqCSV = rows => '﻿' + [['Kategori', 'Item', 'Spesifikasi', 'Jumlah', 'Satuan'], ...rows.map(r => [r.kat, r.item, r.spec, String(r.qty).replace('.', ','), r.unit])]
+  .map(r => r.map(v => /[;"\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v).join(';')).join('\r\n');
+
 // ---- Simpan di browser (localStorage) ----
 const KEY = 'temandor.p.';
 function listProjects() {

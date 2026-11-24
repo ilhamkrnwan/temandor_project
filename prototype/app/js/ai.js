@@ -20,19 +20,25 @@ function aiBubble(role, html) {
 const aiText = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\n/g, '<br>');
 const TOOL_LABEL = { get_project: 'Membaca gambar', list_types: 'Melihat daftar komponen', add_nodes: 'Menambah komponen', draw_duct: 'Menggambar jalur duct', update_nodes: 'Mengubah komponen', delete_nodes: 'Menghapus komponen' };
 
+// Kunci diatur di settings.html#integrasi
 function aiKeyUI() {
   const has = !!localStorage.getItem(AI_KEY);
   $('#ai-key-box').hidden = has;
   $('#ai-form').hidden = !has;
-  $('#ai-key-reset').hidden = !has;
+  $('#ai-model').innerHTML = has ? '<img src="assets/svg/ai/claude.svg" alt="" class="w-3 h-3">Claude' : '<span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>Belum terkoneksi';
 }
-$('#ai-key-form').addEventListener('submit', e => {
-  e.preventDefault();
-  const k = $('#ai-key').value.trim();
-  if (!k.startsWith('sk-ant-')) return toast('Kunci API Anthropic diawali "sk-ant-"');
-  localStorage.setItem(AI_KEY, k); $('#ai-key').value = ''; AI.client = null; aiKeyUI(); $('#ai-in').focus();
-});
-$('#ai-key-reset').onclick = () => { if (confirm('Hapus kunci API dari browser ini?')) { localStorage.removeItem(AI_KEY); AI.client = null; aiKeyUI(); } };
+// Jendela melayang: buka/tutup lewat tombol, Ctrl+K, Esc
+function aiOpen(on) {
+  $('#ai-win').hidden = !on;
+  document.body.classList.toggle('ai-open', on); // panel properti mengalah selama AI terbuka
+  $('#ai-fab').setAttribute('aria-expanded', on);
+  if (on) ($('#ai-form').hidden ? $('#ai-key-box a') : $('#ai-in')).focus(); else $('#ai-fab').focus();
+}
+$('#ai-fab').onclick = () => aiOpen(true);
+$('#ai-close').onclick = () => aiOpen(false);
+$('#ai-win').addEventListener('keydown', e => { if (e.key === 'Escape') { e.stopPropagation(); aiOpen(false); } });
+document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); aiOpen($('#ai-win').hidden); } }, true);
+addEventListener('pageshow', () => { AI.client = null; aiKeyUI(); }); // balik dari Pengaturan (bfcache)
 $('#ai-clear').onclick = () => { AI.msgs = []; aiLog.innerHTML = AI_EMPTY; };
 
 async function aiClient() {
@@ -75,13 +81,21 @@ async function aiSend(text) {
       const uses = r.content.filter(b => b.type === 'tool_use');
       if (!uses.length) { if (r.stop_reason === 'max_tokens') wait.before(aiBubble('bot', 'Jawaban terpotong (terlalu panjang).')); break; }
       const results = [];
+      const before = new Map(P.nodes.map(n => [n.id, JSON.stringify(n)]));
       commit(() => { // satu langkah AI = satu undo
         for (const u of uses) {
           try { results.push({ type: 'tool_result', tool_use_id: u.id, content: JSON.stringify(runTool(P, u.name, u.input)) }); }
           catch (e) { results.push({ type: 'tool_result', tool_use_id: u.id, content: e.message, is_error: true }); }
         }
       });
-      wait.before(aiBubble('tool', uses.map((u, i) => `<span class="${results[i].is_error ? 'err' : ''}">${TOOL_LABEL[u.name] || u.name}${results[i].is_error ? ' – gagal' : ''}</span>`).join('')));
+      // Perubahan AI terlihat: komponen baru/berubah dipilih & di-zoom, langkah ini bisa diurungkan dari balonnya
+      const changed = P.nodes.filter(n => before.get(n.id) !== JSON.stringify(n)).map(n => n.id), gone = [...before.keys()].filter(id => !node(id)).length, mark = hist.length;
+      if (changed.length) { sel = new Set(changed); refresh(); zoomSel(); }
+      const bubble = aiBubble('tool', uses.map((u, i) => `<span class="${results[i].is_error ? 'err' : ''}">${TOOL_LABEL[u.name] || u.name}${results[i].is_error ? ' – gagal' : ''}</span>`).join('')
+        + (changed.length || gone ? `<button type="button" class="ai-undo">Urungkan langkah ini</button>` : ''));
+      const ub = bubble.querySelector('.ai-undo');
+      if (ub) ub.onclick = () => { if (hist.length !== mark) return toast('Sudah ada perubahan lain sesudahnya. Pakai Ctrl+Z untuk mundur satu per satu.'); undo(); ub.disabled = true; ub.textContent = 'Diurungkan'; };
+      wait.before(bubble);
       AI.msgs.push({ role: 'user', content: results });
     }
   } catch (e) {
@@ -92,11 +106,11 @@ async function aiSend(text) {
     aiLog.scrollTop = aiLog.scrollHeight;
   }
 }
-const AI_EMPTY = `<div class="ai-empty"><p>Minta AI menggambar, mengubah, atau mengecek sketsa. Semua perubahan bisa di-undo (Ctrl+Z).</p>
+const AI_EMPTY = `<div class="ai-empty"><b class="block font-cond text-xl leading-tight">Mau digambarkan apa?</b><p>AI bisa menggambar, mengubah, atau mengecek sketsa. Semua perubahan bisa di-undo (Ctrl+Z).</p>
   ${['Cek gambar ini dan jelaskan warning-nya', 'Tambah ruangan rapat 6x5 m di sebelah kanan, dengan pintu dan 2 diffuser', 'Sambungkan ujung duct yang masih terbuka']
     .map(s => `<button class="ai-sug" type="button">${s}</button>`).join('')}</div>`;
 aiLog.innerHTML = AI_EMPTY;
-aiLog.addEventListener('click', e => { const b = e.target.closest('.ai-sug'); if (b && localStorage.getItem(AI_KEY)) aiSend(b.textContent); else if (b) $('#ai-key').focus(); });
+aiLog.addEventListener('click', e => { const b = e.target.closest('.ai-sug'); if (b && localStorage.getItem(AI_KEY)) aiSend(b.textContent); else if (b) toast('Hubungkan Claude dulu untuk memakai saran ini', { label: 'Hubungkan', fn: () => { location.href = 'settings.html#integrasi'; } }); });
 $('#ai-form').addEventListener('submit', e => { e.preventDefault(); const v = $('#ai-in').value; $('#ai-in').value = ''; aiSend(v); });
 $('#ai-in').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('#ai-form').requestSubmit(); } });
 aiKeyUI();
