@@ -5,6 +5,10 @@ const PAL = {
   paper: { bg: '#ffffff', wall: '#e8ebef', col: { sa: '#1d4ed8', ea: '#be185d', eq: '#15803d', diff: '#0e7490', hanger: '#64748b', dim: '#334155', denah: '#475569', kolom: '#1e293b', bukaan: '#6d28d9', arsi: '#64748b', coret: '#c2410c' },
     lbl: { sa: '#1d4ed8', ea: '#be185d', eq: '#15803d', diff: '#0e7490', hanger: '#64748b', dim: '#1e293b', denah: '#475569', kolom: '#1e293b', bukaan: '#6d28d9', arsi: '#475569', coret: '#c2410c' } },
 };
+// Warna pilihan teks/catatan. Nama sama di semua tema; nilainya disesuaikan supaya tetap terbaca
+// ("putih" di kertas jadi hitam, seperti warna 7 di AutoCAD). Nomor warna DXF: PICK_ACI di dxf.js.
+PAL.screen.pick = { merah: '#f87171', kuning: '#facc15', hijau: '#4ade80', biru: '#60a5fa', putih: '#f3f4f6' };
+PAL.paper.pick = { merah: '#dc2626', kuning: '#a16207', hijau: '#15803d', biru: '#1d4ed8', putih: '#111827' };
 // Kanvas terang: warna garis seperti kertas, latar sedikit abu supaya tidak silau
 PAL.light = { ...PAL.paper, bg: '#f6f7f9', wall: '#e2e6eb' };
 const f1 = v => Math.round(v * 10) / 10;
@@ -13,7 +17,7 @@ const ptsD = (pts, close) => 'M' + pts.map(p => f1(p[0]) + ' ' + f1(p[1])).join(
 
 // o: { pal, sw (tebal garis), live (true = garis tetap tipis berapa pun zoom) }
 function primSVG(pr, layer, o) {
-  const pal = PAL[o.pal], col = pal.col[layer], w = o.sw * (pr.j ? 0.65 : 1);
+  const pal = PAL[o.pal], col = pr.col ? pal.pick[pr.col] : pal.col[layer], w = o.sw * (pr.j ? 0.65 : 1);
   const fl = pr.fill === 'wall' ? pal.wall : pr.fill ? pal.bg : 'none';  // fill: 'wall' = arsir dinding, lainnya = warna latar (menutup)
   const st = pr.nostroke ? `class="wall" stroke="none" fill="${fl}"` : `stroke="${col}" stroke-width="${f1(w * 100) / 100}" fill="${fl}"${pr.dash ? ` stroke-dasharray="${f1(o.sw * 6)} ${f1(o.sw * 4)}"` : ''}`;
   switch (pr.k) {
@@ -31,7 +35,8 @@ function primSVG(pr, layer, o) {
     }
     case 't': {
       const tr = pr.rot ? ` transform="rotate(${f1(pr.rot)} ${f1(pr.p[0])} ${f1(pr.p[1])})"` : '';
-      return `<text x="${f1(pr.p[0])}" y="${f1(pr.p[1])}" font-size="${f1(pr.h)}" text-anchor="${pr.anchor}" fill="${pal.lbl[layer]}"${tr}>${esc(pr.s)}</text>`;
+      const sty = (pr.b ? ' font-weight="700"' : '') + (pr.it ? ' font-style="italic"' : '') + (pr.ul ? ' text-decoration="underline"' : '');
+      return `<text x="${f1(pr.p[0])}" y="${f1(pr.p[1])}" font-size="${f1(pr.h)}" text-anchor="${pr.anchor}" fill="${pr.col ? pal.pick[pr.col] : pal.lbl[layer]}"${sty}${tr}>${esc(pr.s)}</text>`;
     }
     case 'hit': return o.live ? `<path class="hit" d="${ptsD(pr.pts, 1)}" fill="transparent" stroke="none"/>` : '';
   }

@@ -50,6 +50,17 @@ function annotate(out, n, c, len, W) {
   if (len > c.th * 2.2) out.push(arrow(len / 2, 0, n.flip ? 180 : 0, Math.min(c.th * 0.8, W * 0.7)));
 }
 
+// Teks bergaya (komponen Teks & Catatan): ukuran = th (mm) atau faktor tz × tinggi teks skala gambar.
+// Lebar diperkirakan dari font mono (±0,62 em per huruf) untuk kotak latar & area klik.
+const textH = (n, c) => n.th || c.th * (+n.tz || 1);
+function styledText(n, c, x, y, anchor) {
+  const h = textH(n, c), w = Math.max(h, String(n.s).length * h * 0.62), x0 = anchor === 'middle' ? x - w / 2 : anchor === 'end' ? x - w : x;
+  const col = n.col ? { col: n.col } : {}, p = h * 0.3, out = [];
+  if (n.bx) out.push(rect(x0 - p, y - h * 0.95, w + 2 * p, h * 1.3, { fill: 1, ...col })); // kotak berlatar: teks terbaca di atas garis duct
+  out.push(txt(x, y, n.s, h, { anchor, b: n.b, it: n.it, ul: n.ul, ...col, ...lbl }), hitR(x0, y - h, w, h * 1.25));
+  return out;
+}
+
 // Gantungan otomatis di sepanjang duct (layer HANGER)
 function hangers(len, W, c) {
   if (!c.hang || !c.hang.on || !(c.hang.sp > 0)) return [];
@@ -240,19 +251,52 @@ const TYPES = {
   },
   elbow: {
     name: 'Elbow', icon: 'elbow-90', duct: 1, mirror: 1,
-    def: { w: 24, h: 20, shape: 'rect', angle: 90, sys: 'SA', elev: 2700 },
-    f: ['sys', 'size', 'angle', 'elev'],
-    // Radius garis tengah = 1.0 × lebar (R/W = 1)
-    geo(n, u) { const W = mmOf(n.w, u), R = W, a = n.angle; return { W, R, a, C: [0, R], end: [R * Math.sin(a * RAD), R - R * Math.cos(a * RAD)] }; },
-    ports(n, u) { const g = this.geo(n, u); return [port('a', 0, 0, 180, n), port('b', g.end[0], g.end[1], n.angle, n)]; },
+    // et: 'r' = radius (rr × lebar, 1 atau 1.5), 'sq' = siku + sudu pengarah (vane).
+    // w2/h2 = ukuran ujung b (elbow mengecil/reducing); kosong = sama dengan ujung a.
+    def: { w: 24, h: 20, w2: null, h2: null, shape: 'rect', angle: 90, et: 'r', rr: '1', sys: 'SA', elev: 2700 },
+    f: ['sys', 'size', 'size2', 'angle', 'et', 'rr', 'elev'],
+    geo(n, u) {
+      const W1 = mmOf(n.w, u), W2 = mmOf(n.w2 ?? n.w, u), a = n.angle;
+      if (n.et === 'sq') { // garis tengah: lurus d → belok a → lurus d (sudut di K)
+        const d = Math.max(W1, W2) / 2 * Math.tan(a * RAD / 2) + 75; // +75 mm leher supaya ada tempat sambungan
+        return { W1, W2, a, sq: 1, d, K: [d, 0], end: [d + d * Math.cos(a * RAD), d * Math.sin(a * RAD)] };
+      }
+      const R = (+n.rr || 1) * Math.max(W1, W2); // radius garis tengah; ≥ lebar terbesar supaya sisi dalam tidak terbalik
+      return { W1, W2, a, R, C: [0, R], end: [R * Math.sin(a * RAD), R - R * Math.cos(a * RAD)] };
+    },
+    ports(n, u) {
+      const g = this.geo(n, u);
+      // Belum reducing: ujung b mewakili ukuran utama (menempel = salin ke seluruh elbow, seperti sebelumnya)
+      return [port('a', 0, 0, 180, n), n.w2 == null ? port('b', g.end[0], g.end[1], n.angle, n) : port('b', g.end[0], g.end[1], n.angle, n, { keys: ['w2', 'h2'] })];
+    },
     prims(n, c) {
-      const { W, R, a, C } = this.geo(n, c.unit), a1 = -90 + a, ro = R + W / 2, ri = R - W / 2;
-      const at = (r, d) => [C[0] + r * Math.cos(d * RAD), C[1] + r * Math.sin(d * RAD)];
-      const band = [];
-      for (let i = 0; i <= 8; i++) band.push(at(ro, -90 + a * i / 8));
-      for (let i = 8; i >= 0; i--) band.push(at(ri, -90 + a * i / 8));
-      const p1 = at(ro, a1), p2 = at(ri, a1);
-      return [arc(C, ro, -90, a1), arc(C, ri, -90, a1), ln(0, -W / 2, 0, W / 2, { j: 1 }), ln(p1[0], p1[1], p2[0], p2[1], { j: 1 }), hit(band)];
+      const g = this.geo(n, c.unit), { W1, W2, a } = g;
+      if (g.sq) {
+        // Dinding = garis offset ±W/2 tiap kaki, bertemu di garis miter (sudut luar & dalam)
+        const u2 = [Math.cos(a * RAD), Math.sin(a * RAD)], nm2 = [-u2[1], u2[0]];
+        const meet = s => { // s = -1 sisi luar, +1 sisi dalam
+          const y1 = s * W1 / 2, o2 = [g.K[0] + nm2[0] * s * W2 / 2, g.K[1] + nm2[1] * s * W2 / 2];
+          const t = Math.abs(u2[1]) < 1e-9 ? 0 : (y1 - o2[1]) / u2[1];
+          return [o2[0] + u2[0] * t, y1];
+        };
+        const Oc = meet(-1), Ic = meet(1), Ep = g.end, eo = [Ep[0] - nm2[0] * W2 / 2, Ep[1] - nm2[1] * W2 / 2], ei = [Ep[0] + nm2[0] * W2 / 2, Ep[1] + nm2[1] * W2 / 2];
+        const out = [pl([[0, -W1 / 2], Oc, eo]), pl([[0, W1 / 2], Ic, ei]), ln(0, -W1 / 2, 0, W1 / 2, { j: 1 }), ln(eo[0], eo[1], ei[0], ei[1], { j: 1 })];
+        // Sudu pengarah: busur kecil sepanjang garis miter, tiap ±100 mm (min. 2)
+        const k = Math.max(2, Math.round(dist(Ic, Oc) / 100)), v = Math.min(W1, W2) / 6;
+        for (let i = 1; i <= k; i++) {
+          const P = [Ic[0] + (Oc[0] - Ic[0]) * i / (k + 1), Ic[1] + (Oc[1] - Ic[1]) * i / (k + 1)], m = (-90 + a / 2) * RAD;
+          out.push(arc([P[0] - v * Math.cos(m), P[1] - v * Math.sin(m)], v, -90, -90 + a, { j: 1 }));
+        }
+        out.push(hit([[0, -W1 / 2], Oc, eo, ei, Ic, [0, W1 / 2]]));
+        return out;
+      }
+      const { R, C } = g, a1 = -90 + a, at = (r, d) => [C[0] + r * Math.cos(d * RAD), C[1] + r * Math.sin(d * RAD)];
+      const half = t => (W1 + (W2 - W1) * t) / 2; // lebar berubah merata di sepanjang lengkung (reducing)
+      const outer = [], inner = [];
+      for (let i = 0; i <= 16; i++) { const t = i / 16, d = -90 + a * t; outer.push(at(R + half(t), d)); inner.push(at(R - half(t), d)); }
+      const p1 = outer[16], p2 = inner[16];
+      const walls = W1 === W2 ? [arc(C, R + W1 / 2, -90, a1), arc(C, R - W1 / 2, -90, a1)] : [pl(outer), pl(inner)]; // sama lebar: ARC asli di DXF
+      return [...walls, ln(0, -W1 / 2, 0, W1 / 2, { j: 1 }), ln(p1[0], p1[1], p2[0], p2[1], { j: 1 }), hit([...outer, ...inner.reverse()])];
     },
     grips: edgeGrip, grip: (n, id, l, g, u) => widthGrip(n, l, u),
   },
@@ -597,9 +641,27 @@ const TYPES = {
   },
   text: {
     name: 'Teks', layer: 'dim',
-    def: { s: 'Catatan', th: 0 },
-    f: ['s', 'th'],
-    prims(n, c) { const h = n.th || c.th; return [txt(0, 0, n.s, h, { anchor: 'start', ...lbl }), hitR(0, -h, Math.max(h, n.s.length * h * 0.62), h * 1.25)]; },
+    def: { s: 'Catatan', th: 0, tz: '1', col: '', al: 'start', b: false, it: false, ul: false, bx: false },
+    f: ['s', 'tz', 'th', 'col', 'al', 'sty'],
+    prims(n, c) { return styledText(n, c, 0, 0, n.al || 'start'); },
+  },
+  // Catatan dengan panah penunjuk (leader): (x, y) = ujung panah di komponen, (tx, ty) = letak teks
+  note: {
+    name: 'Catatan + panah', layer: 'dim',
+    def: { s: 'Cek di lapangan', tx: 1200, ty: -900, th: 0, tz: '1', col: 'merah', b: false, it: false, ul: false, bx: true },
+    f: ['s', 'tz', 'th', 'col', 'sty'],
+    prims(n, c) {
+      const h = textH(n, c), right = n.tx >= 0, gap = h * 0.4, ah = h * 0.9, col = n.col ? { col: n.col } : {};
+      const L = Math.hypot(n.tx, n.ty) || 1, d = [n.tx / L, n.ty / L]; // arah dari ujung panah ke teks
+      return [
+        ln(n.tx, n.ty, d[0] * ah, d[1] * ah, col),                                            // garis teks → pangkal panah
+        { ...arrow(d[0] * ah / 2, d[1] * ah / 2, Math.atan2(-d[1], -d[0]) / RAD, ah), ...col }, // ujung panah tepat di (0, 0)
+        ...styledText(n, c, n.tx + (right ? gap : -gap), n.ty + h * 0.35, right ? 'start' : 'end'),
+        hit([[0, -h / 2], [n.tx, n.ty - h / 2], [n.tx, n.ty + h / 2], [0, h / 2]]),
+      ];
+    },
+    grips: n => [['t', n.tx, n.ty]],
+    grip(n, id, l) { n.tx = Math.round(l[0]); n.ty = Math.round(l[1]); },
   },
 };
 

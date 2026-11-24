@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Template · Temandor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="js/ui.js"></script>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body class="min-h-dvh flex flex-col bg-paper text-ink font-sans text-[15px]">
+
+<header class="relative bg-panel border-b border-line">
+  <div class="tape absolute inset-x-0 top-0 h-[3px]"></div>
+  <div class="max-w-6xl mx-auto h-14 px-4 flex items-center gap-3">
+    <a href="index.html" class="flex items-center gap-2">
+      <span class="grid place-items-center w-8 h-8 rounded bg-ink"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="#f2c200" stroke-width="2.2"><path d="M3 6h7a8 8 0 0 1 8 8v7M3 12h7a2 2 0 0 1 2 2v7"/></svg></span>
+      <span class="font-cond font-bold text-xl tracking-wide">TEMANDOR</span>
+    </a>
+    <a href="index.html#store" class="hidden sm:block text-muted text-sm border-l border-line pl-3 hover:text-ink">Template</a>
+    <span class="ml-auto mock-badge">MOCK</span>
+    <span data-auth class="contents"></span>
+  </div>
+</header>
+
+<main class="flex-1 max-w-6xl w-full mx-auto px-4 py-6 sm:py-8">
+  <nav class="text-sm text-muted" aria-label="Lokasi"><a href="index.html#store" class="inline-flex items-center gap-1 hover:text-ink"><svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg>Semua template</a></nav>
+
+  <div class="mt-4 grid gap-6 lg:gap-10 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+    <div>
+      <div id="preview" class="card-thumb h-[min(62vh,540px)] min-h-64 rounded-xl bg-cad overflow-hidden"></div>
+      <p class="hint">Pratinjau lengkap. File asli berisi semua layer dan bisa diubah bebas setelah dipakai.</p>
+    </div>
+
+    <div class="lg:sticky lg:top-6 self-start">
+      <p id="cat" class="text-sm text-muted"></p>
+      <h1 id="name" class="mt-1 font-cond font-bold text-4xl leading-[1.05] text-balance"></h1>
+      <p class="mt-2 text-sm">oleh <b id="seller"></b></p>
+      <p id="rate" class="mt-1 text-sm"></p>
+
+      <dl id="specs" class="mt-6 grid grid-cols-2 gap-px rounded-lg overflow-hidden ring-1 ring-line bg-line text-sm"></dl>
+
+      <div class="mt-6 flex items-end gap-3">
+        <p class="mr-auto"><span class="block field-label !mb-1">Harga</span><b id="price" class="font-cond text-3xl"></b></p>
+      </div>
+      <div id="cta" class="mt-3 grid gap-2"></div>
+      <p class="hint !mt-3">Template jadi proyek baru di daftar proyekmu. Ini sketsa bantu: cek ulang ukuran di lapangan.</p>
+    </div>
+  </div>
+
+  <div class="mt-12 grid gap-10 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+    <section aria-labelledby="t-review">
+      <h2 id="t-review" class="font-cond font-bold text-2xl">Ulasan</h2>
+      <ul id="reviews" class="mt-3 divide-y divide-line"></ul>
+    </section>
+    <section aria-labelledby="t-isi">
+      <h2 id="t-isi" class="font-cond font-bold text-2xl">Isi gambar</h2>
+      <ul id="parts" class="mt-3 space-y-1.5 text-sm"></ul>
+    </section>
+  </div>
+</main>
+
+<footer class="border-t border-line">
+  <div class="max-w-6xl mx-auto px-4 h-12 flex items-center text-xs text-muted">Temandor · marketplace template masih mock: belum ada transaksi sungguhan.</div>
+</footer>
+
+<script src="js/geom.js"></script>
+<script src="js/model.js"></script>
+<script src="js/render.js"></script>
+<script src="js/dxf.js"></script>
+<script src="js/store.js"></script>
+<script>
+  const t = tplById(new URLSearchParams(location.search).get('id'));
+  if (!t) location.replace('404.html');
+  const { p, rooms, m2, dif } = tplInfo(t);
+  document.title = p.name + ' · Template Temandor';
+  $('#preview').innerHTML = thumbSVG(p);
+  $('#cat').textContent = t.cat;
+  $('#name').textContent = p.name;
+  $('#seller').textContent = t.seller;
+  $('#rate').innerHTML = `${STAR} <b>${t.rate}</b> <span class="text-muted">· ${t.n} kali dipakai</span>`;
+  $('#specs').innerHTML = [['Luas', m2 + ' m²'], ['Ruangan', rooms], ['Diffuser', dif], ['Satuan duct', p.unit], ['Skala', p.scale], ['Sistem', ['SA', 'EA'].filter(s => p.nodes.some(n => n.sys === s)).join(' + ')]]
+    .map(([k, v]) => `<div class="bg-panel px-3 py-2.5"><dt class="text-xs text-muted">${k}</dt><dd class="font-mono">${v}</dd></div>`).join('');
+  $('#price').textContent = rp(t.price);
+  const use = canUse(t);
+  $('#cta').innerHTML = use
+    ? `<button class="btn-primary !h-11 !text-[15px]" data-use>${t.price ? 'Pakai template' : 'Pakai gratis'}</button>${t.price ? '<p class="text-sm text-green-800">Sudah kamu miliki.</p>' : ''}`
+    : `<a class="btn-primary !h-11 !text-[15px]" href="checkout.html?id=${t.id}">Beli ${rp(t.price)}</a>`;
+  $('[data-use]')?.addEventListener('click', () => useTemplate(t));
+
+  // Isi gambar: jumlah komponen per jenis
+  const count = {};
+  p.nodes.forEach(n => { const nm = TYPES[n.type].name; count[nm] = (count[nm] || 0) + 1; });
+  $('#parts').innerHTML = Object.entries(count).sort((a, b) => b[1] - a[1])
+    .map(([nm, c]) => `<li class="flex justify-between gap-3 border-b border-line pb-1.5"><span>${esc(nm)}</span><span class="font-mono text-muted">${c}</span></li>`).join('');
+
+  // ponytail: ulasan statis (mock)
+  const REVIEWS = [
+    ['Rudi H.', 'Mandor · Tangerang', 5, 'Tinggal ubah ukuran ruangan, jalur duct sudah rapi. Hemat setengah hari.'],
+    ['Sari P.', 'Drafter', 5, 'Layer DXF-nya sudah sesuai, tidak perlu dirapikan lagi di AutoCAD.'],
+    ['Bambang', 'Kontraktor HVAC', 4, 'Bagus untuk awal. Debit diffuser tetap perlu dicek ulang sesuai beban ruangan.'],
+  ];
+  $('#reviews').innerHTML = REVIEWS.map(([n, r, s, txt]) => `<li class="py-4">
+      <div class="flex items-center gap-3"><span class="avatar !w-8 !h-8 !text-sm" aria-hidden="true">${n[0]}</span>
+        <div class="mr-auto"><b class="text-sm">${n}</b><p class="text-xs text-muted">${r}</p></div><span class="text-sm" aria-label="${s} dari 5">${STAR.repeat(s)}</span></div>
+      <p class="mt-2 text-sm leading-relaxed max-w-prose">${txt}</p></li>`).join('');
+</script>
+</body>
+</html>

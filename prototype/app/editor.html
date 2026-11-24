@@ -21,15 +21,15 @@
     <span class="hidden md:block font-cond font-bold text-lg tracking-wide">TEMANDOR</span>
   </a>
   <input id="proj-name" aria-label="Nama proyek" class="min-w-0 flex-1 sm:flex-none sm:w-56 bg-transparent font-semibold px-2 py-1 rounded hover:bg-black/5 focus:bg-white focus:outline-none focus:ring-2 focus:ring-hazard">
-  <span id="saved" class="hidden xl:inline text-muted text-xs">Tersimpan di browser</span>
-  <div class="hidden sm:flex items-center ml-1">
-    <button id="undo" class="tool !text-ink/70 hover:!bg-black/5 disabled:opacity-30" title="Undo (Ctrl+Z)"><svg viewBox="0 0 24 24" class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button>
-    <button id="redo" class="tool !text-ink/70 hover:!bg-black/5 disabled:opacity-30" title="Redo (Ctrl+Y)"><svg viewBox="0 0 24 24" class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 14 5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg></button>
+  <div class="flex items-center sm:ml-1">
+    <button id="undo" class="tool !text-ink/70 hover:!bg-black/5 disabled:opacity-30" title="Undo (Ctrl+Z)" aria-label="Undo"><svg viewBox="0 0 24 24" class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button>
+    <button id="redo" class="tool !text-ink/70 hover:!bg-black/5 disabled:opacity-30" title="Redo (Ctrl+Y)" aria-label="Redo"><svg viewBox="0 0 24 24" class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 14 5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg></button>
   </div>
   <div class="ml-auto flex items-center gap-1.5">
-    <button data-drawer="side" class="lg:hidden btn-ghost !px-2.5">Properti</button>
-    <button id="focus" class="hidden lg:grid tool !text-ink/70 hover:!bg-black/5 aria-pressed:!bg-hazard aria-pressed:!text-ink" title="Mode fokus: tutup semua panel (Tab)" aria-label="Mode fokus"><svg viewBox="0 0 24 24" class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
-    <button id="theme" class="tool !text-ink/70 hover:!bg-black/5" title="Kanvas gelap / terang" aria-label="Ganti tema kanvas"><svg viewBox="0 0 24 24" class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg></button>
+    <button data-drawer="side" class="lg:hidden btn-ghost !px-2 sm:!px-2.5" title="Properti"><svg viewBox="0 0 24 24" class="w-4 h-4 sm:hidden" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg><span class="max-sm:sr-only">Properti</span></button>
+    <button id="focus" class="hidden lg:grid tool !text-ink/70 hover:!bg-black/5 aria-pressed:!bg-hazard aria-pressed:!text-ink" title="Mode fokus: tutup semua panel (Ctrl+.)" aria-label="Mode fokus"><svg viewBox="0 0 24 24" class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+    <button id="theme" class="max-sm:!hidden tool !text-ink/70 hover:!bg-black/5" title="Kanvas gelap / terang" aria-label="Ganti tema kanvas"><svg viewBox="0 0 24 24" class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg></button>
+    <a href="settings.html" class="tool !text-ink/70 hover:!bg-black/5" title="Pengaturan" aria-label="Pengaturan"><svg viewBox="0 0 24 24" class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg></a>
     <a href="docs.html#dukung" target="_blank" class="hidden xl:inline-flex btn-ghost !px-2.5" title="Temandor gratis & open source. Dukung pengembangannya."><span class="text-red-600">♥</span> Dukung</a>
     <button class="hidden sm:inline-flex btn-ghost !px-0 w-8" data-open="dlg-keys" title="Pintasan keyboard (?)" aria-label="Pintasan keyboard">?</button>
     <button id="save" class="hidden sm:inline-flex btn-ghost" title="Simpan (Ctrl+S)">Simpan</button>
@@ -45,9 +45,8 @@
     <button class="rail-btn" data-cat="elemen" title="Komponen: ruangan, arsitektur, duct, equipment" aria-pressed="false"><svg viewBox="0 0 24 24" class="w-[22px] h-[22px]" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><circle cx="17" cy="7" r="3.5"/><path d="M7 13.5l3.8 6.5H3.2zM13.5 13.5h7v7h-7z"/></svg><span>Elemen</span></button>
     <button class="rail-btn" data-cat="alat" title="Alat gambar: duct, ruangan bebas, partisi, ukur, coretan" aria-pressed="false"><svg viewBox="0 0 24 24" class="w-[22px] h-[22px]" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19z"/><path d="M14.5 6.5l3 3"/></svg><span>Alat</span></button>
     <button class="rail-btn" data-cat="teks" title="Teks & catatan" aria-pressed="false"><svg viewBox="0 0 24 24" class="w-[22px] h-[22px]" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M5 7V5h14v2M12 5v14M9 19h6"/></svg><span>Teks</span></button>
-    <button class="rail-btn" data-cat="ai" title="Asisten AI: minta digambarkan, diubah, atau dicek" aria-pressed="false"><svg viewBox="0 0 24 24" class="w-[22px] h-[22px]" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z"/></svg><span>AI</span></button>
     <button class="rail-btn" data-cat="layer" title="Layer: tampil/sembunyi, kunci" aria-pressed="false"><svg viewBox="0 0 24 24" class="w-[22px] h-[22px]" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg><span>Layer</span></button>
-    <button class="rail-btn" data-cat="proyek" title="Pengaturan proyek: skala, gantungan" aria-pressed="false"><svg viewBox="0 0 24 24" class="w-[22px] h-[22px]" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M4 6a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/></svg><span>Proyek</span></button>
+    <button class="rail-btn" data-cat="proyek" title="Daftar proyek & pengaturan proyek ini" aria-pressed="false"><svg viewBox="0 0 24 24" class="w-[22px] h-[22px]" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M4 6a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/></svg><span>Proyek</span></button>
   </nav>
 
   <!-- ============ PANEL KIRI (isi sesuai kategori rail) ============ -->
@@ -66,26 +65,9 @@
         <button class="text-preset text-2xl font-bold" data-text="2">Tambah judul</button>
         <button class="text-preset text-lg font-semibold" data-text="1.4">Tambah subjudul</button>
         <button class="text-preset text-sm" data-text="1">Tambah teks biasa</button>
-        <p class="hint !mt-3">Teks langsung muncul di tengah layar, tinggal ketik. Klik ganda teks untuk mengubahnya.</p>
+        <button class="text-preset text-sm flex items-center gap-3" data-note><svg viewBox="0 0 32 24" class="w-8 h-6 shrink-0 text-red-600" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 21 14 9h15"/><path d="M3 21l1.5-6 4 4z" fill="currentColor"/><rect x="14" y="3" width="15" height="7" rx="1"/></svg><span><b class="block">Catatan + panah</b><span class="text-xs text-muted">Klik komponen yang ditunjuk, mis. "cek plafon"</span></span></button>
+        <p class="hint !mt-3">Teks langsung muncul di tengah layar, tinggal ketik. Klik ganda teks untuk mengubahnya. Warna, rata, miring, dan kotak ada di panel Properti.</p>
       </div>
-    </section>
-    <section class="pane" data-pane="ai">
-      <div class="flex items-center gap-1 pr-2"><h2 class="pane-title mr-auto">Asisten AI</h2>
-        <button id="ai-key-reset" class="panel-x" title="Hapus kunci API dari browser ini" aria-label="Hapus kunci API" hidden><svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3"/></svg></button>
-        <button id="ai-clear" class="panel-x" title="Percakapan baru" aria-label="Percakapan baru"><svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg></button></div>
-      <div id="ai-log" class="flex-1 overflow-y-auto px-3 pb-3 space-y-2" aria-live="polite"></div>
-      <div id="ai-key-box" class="p-3 border-t border-line">
-        <form id="ai-key-form" class="space-y-2">
-          <label class="field-label" for="ai-key">Kunci API Anthropic (Claude)</label>
-          <input id="ai-key" type="password" class="field" placeholder="sk-ant-…" autocomplete="off" spellcheck="false">
-          <button class="btn-primary w-full">Hubungkan</button>
-          <p class="hint">Kunci disimpan di browser ini saja dan hanya dikirim ke api.anthropic.com. Buat kunci di <a class="underline" href="https://platform.claude.com/settings/keys" target="_blank" rel="noopener">platform.claude.com</a>. <a class="underline" href="docs.html#ai">Selengkapnya</a></p>
-        </form>
-      </div>
-      <form id="ai-form" class="p-3 border-t border-line" hidden>
-        <div class="ai-input"><textarea id="ai-in" rows="2" placeholder="mis. Tambah FCU di tengah ruangan lalu tarik duct ke 3 diffuser" aria-label="Pesan ke AI"></textarea>
-          <button id="ai-send" class="btn-primary !px-3" title="Kirim (Enter)" aria-label="Kirim"><svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
-      </form>
     </section>
     <section class="pane" data-pane="layer">
       <h2 class="pane-title">Layer</h2>
@@ -96,12 +78,12 @@
       <h2 class="pane-title">Proyek</h2>
       <div id="proj" class="flex-1 overflow-y-auto px-4 pb-4"></div>
     </section>
-    <button data-panel="lib" class="lib-handle" title="Tutup panel (Ctrl+[)" aria-label="Tutup panel">‹</button>
+    <button data-panel="lib" class="lib-handle" title="Tutup panel (Ctrl+[)" aria-label="Tutup panel"><svg viewBox="0 0 24 24" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
   </aside>
 
   <!-- ============ KANVAS ============ -->
   <main id="canvas" class="relative flex-1 min-w-0 bg-cad overflow-hidden" aria-label="Kanvas gambar">
-    <svg id="cad" data-tool="select" class="absolute inset-0 w-full h-full select-none touch-none" font-family="'JetBrains Mono', monospace">
+    <svg id="cad" data-tool="select" tabindex="0" role="application" aria-label="Kanvas gambar. Tab atau Shift+Tab untuk memilih komponen, panah untuk menggeser, Delete untuk menghapus." class="absolute inset-0 w-full h-full select-none touch-none" font-family="'JetBrains Mono', monospace">
       <defs>
         <pattern id="g1" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M100 0H0V100" fill="none" stroke="#1c2127" stroke-width="1"/></pattern>
         <pattern id="g2" width="500" height="500" patternUnits="userSpaceOnUse"><rect width="500" height="500" fill="url(#g1)"/><path d="M500 0H0V500" fill="none" stroke="#2a3038" stroke-width="1"/></pattern>
@@ -117,21 +99,42 @@
 
     <!-- Petunjuk awal (proyek masih kosong) -->
     <div id="empty-hint" class="absolute top-3 left-3 w-[min(22rem,calc(100%-1.5rem))] bg-panel rounded-xl shadow-2xl p-4">
-      <button id="hint-close" class="absolute top-2 right-2 w-7 h-7 grid place-items-center rounded hover:bg-black/5" aria-label="Tutup petunjuk">✕</button>
+      <button id="hint-close" class="absolute top-2 right-2 w-7 h-7 grid place-items-center rounded hover:bg-black/5" aria-label="Tutup petunjuk"><svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
       <div class="field-label">Mulai menggambar</div>
       <ol class="mt-2 space-y-2.5">
-        <li class="flex gap-3"><span class="shrink-0 grid place-items-center w-6 h-6 rounded-full bg-hazard font-bold text-xs">1</span><span>Seret <b>Indoor ducted</b> dari menu <b>Elemen</b> di kiri ke dalam ruangan.</span></li>
+        <li class="flex gap-3"><span class="shrink-0 grid place-items-center w-6 h-6 rounded-full bg-hazard font-bold text-xs">1</span><span>Seret <b>Indoor ducted (FCU)</b> dari menu <b>Elemen</b> di kiri ke dalam ruangan.</span></li>
         <li class="flex gap-3"><span class="shrink-0 grid place-items-center w-6 h-6 rounded-full bg-hazard font-bold text-xs">2</span><span>Tekan <kbd>D</kbd>, klik ujung unit, lalu klik titik belok. Elbow dipasang otomatis. Ketik angka + Enter untuk panjang pas.</span></li>
         <li class="flex gap-3"><span class="shrink-0 grid place-items-center w-6 h-6 rounded-full bg-hazard font-bold text-xs">3</span><span>Seret <b>diffuser</b> ke ujung duct, isi debitnya.</span></li>
       </ol>
       <div class="mt-4 flex flex-wrap gap-2">
-        <button class="btn-primary" data-hint-tool="equip">Taruh FCU</button>
+        <button class="btn-primary" data-hint-tool="equip">Taruh indoor ducted</button>
         <button class="btn-ghost" data-hint-tool="duct">Gambar duct</button>
       </div>
     </div>
 
+    <!-- Asisten AI melayang (seperti Gemini). Ctrl+K buka/tutup -->
+    <button id="ai-fab" class="ai-fab" aria-expanded="false" aria-controls="ai-win" title="Asisten AI (Ctrl+K)"><svg viewBox="0 0 24 24" class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z"/></svg><span>Tanya AI</span></button>
+    <section id="ai-win" class="ai-win" role="dialog" aria-labelledby="ai-title" hidden>
+      <header class="flex items-center gap-2 pl-3 pr-1.5 py-1.5 border-b border-line">
+        <span class="grid place-items-center w-7 h-7 rounded-lg bg-ink text-hazard"><svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z"/></svg></span>
+        <div class="mr-auto min-w-0 leading-tight"><b id="ai-title" class="block text-[13px]">Asisten AI</b><span id="ai-model" class="flex items-center gap-1 text-[11px] text-muted"></span></div>
+        <button id="ai-clear" class="panel-x grid" title="Percakapan baru" aria-label="Percakapan baru"><svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg></button>
+        <a href="settings.html#integrasi" class="panel-x grid" title="Atur integrasi AI" aria-label="Atur integrasi AI"><svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg></a>
+        <button id="ai-close" class="panel-x grid" title="Tutup (Esc)" aria-label="Tutup asisten AI"><svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+      </header>
+      <div id="ai-log" class="flex-1 min-h-0 overflow-y-auto p-3 space-y-2" aria-live="polite"></div>
+      <div id="ai-key-box" class="p-3 border-t border-line">
+        <div class="flex items-center gap-3"><span class="w-2 h-2 rounded-full bg-gray-400 shrink-0"></span><p class="mr-auto text-[13px]"><b>Belum terkoneksi.</b> <span class="text-muted">Asisten memakai Claude; butuh kunci API.</span></p>
+          <a href="settings.html#integrasi" class="btn-primary shrink-0">Hubungkan Claude</a></div>
+      </div>
+      <form id="ai-form" class="p-2.5 border-t border-line" hidden>
+        <div class="ai-input"><textarea id="ai-in" rows="1" placeholder="Minta gambar, ubah, atau cek sketsa…" aria-label="Pesan ke AI"></textarea>
+          <button id="ai-send" class="btn-primary !px-3" title="Kirim (Enter)" aria-label="Kirim"><svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
+      </form>
+    </section>
+
     <!-- Buka lagi panel yang ditutup -->
-    <button id="show-side" data-panel="side" class="panel-tab right-0 rounded-l-lg" title="Buka properti (Ctrl+])" aria-label="Buka properti">«</button>
+    <button id="show-side" data-panel="side" class="panel-tab right-0 rounded-l-lg" title="Buka properti (Ctrl+])" aria-label="Buka properti"><svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M13 6l-6 6 6 6M19 6l-6 6 6 6"/></svg></button>
     <!-- Bar tampilan kanan-bawah: pilih, geser, zoom (seperti Canva) -->
     <div id="viewbar" role="toolbar" aria-label="Tampilan">
       <button class="vb-btn" data-tool="select" title="Pilih (V)" aria-label="Pilih"><svg viewBox="0 0 24 24" class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M5 3l14 8-6.5 1.5L10 19z"/></svg></button>
@@ -148,24 +151,25 @@
     <input id="inline" aria-label="Ubah nama" autocomplete="off" spellcheck="false">
 
     <!-- Panel warning -->
-    <section id="warn-drawer" class="absolute left-3 right-3 bottom-16 sm:left-auto sm:w-96 z-10 bg-panel rounded-xl shadow-2xl overflow-hidden" aria-label="Warning validasi">
+    <section id="warn-drawer" class="absolute left-3 right-3 bottom-16 sm:right-auto sm:w-96 z-10 bg-panel rounded-xl shadow-2xl overflow-hidden" aria-label="Warning validasi">
       <header class="flex items-center gap-2 px-4 py-2.5 border-b border-line">
         <span class="w-2 h-2 rounded-full bg-red-500"></span>
         <b class="font-cond text-base tracking-wide"><span class="warn-count">0</span> WARNING</b>
         <span class="text-muted text-xs">tidak menghalangi simpan / export</span>
-        <button id="warn-close" class="ml-auto w-7 h-7 grid place-items-center rounded hover:bg-black/5" aria-label="Tutup">✕</button>
+        <button id="warn-close" class="ml-auto w-7 h-7 grid place-items-center rounded hover:bg-black/5" aria-label="Tutup"><svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
       </header>
       <ul id="warn-list" class="divide-y divide-line max-h-[40vh] overflow-y-auto"></ul>
     </section>
 
     <!-- ============ PANEL KANAN: properti, muncul saat ada yang dipilih ============ -->
     <aside id="side" class="flex flex-col bg-panel" aria-label="Properti">
-      <div class="flex items-center justify-between px-4 pt-3 -mb-1"><span class="field-label !mb-0">Properti</span><button data-panel="side" class="panel-x grid" title="Tutup panel (Ctrl+])" aria-label="Tutup properti">✕</button></div>
+      <div class="flex items-center justify-between px-4 pt-3 -mb-1"><span class="field-label !mb-0">Properti</span><button data-panel="side" class="panel-x grid" title="Tutup panel (Ctrl+])" aria-label="Tutup properti"><svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
       <section id="props" class="p-4 overflow-y-auto"></section>
     </aside>
   </main>
 </div>
 <div id="scrim"></div>
+<div id="sr" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 
 <!-- ============ BARIS PERINTAH + STATUS BAR ============ -->
 <div class="h-9 shrink-0 flex items-center gap-2 px-3 bg-[#1d2126] border-t border-black text-xs font-mono">
@@ -181,7 +185,8 @@
   <button class="sb-toggle" data-opt="grid" title="Tampilkan grid (F7)">GRID</button>
   <span class="hidden md:inline">Duct <b id="unit" class="text-white"></b></span>
   <span class="hidden md:inline">Skala <b id="scale" class="text-white"></b></span>
-  <button id="warn-btn" class="ml-auto inline-flex items-center gap-1.5 text-red-300 hover:text-red-200"><span class="w-1.5 h-1.5 rounded-full bg-red-400"></span><span class="warn-count">0</span> warning</button>
+  <span id="saved" class="ml-auto text-white/60" aria-live="off">Tersimpan di browser</span>
+  <button id="warn-btn" class="inline-flex items-center gap-1.5 min-h-6 px-1.5 rounded text-red-300 hover:text-red-200 hover:bg-white/10"><span class="w-1.5 h-1.5 rounded-full bg-red-400"></span><span class="warn-count">0</span> warning</button>
 </footer>
 
 <!-- ============ DIALOG EXPORT ============ -->
@@ -191,7 +196,7 @@
       <h2 id="dlg-export-title" class="font-cond font-bold text-2xl">Export gambar</h2>
       <p class="text-sm text-muted mt-0.5">Hasil export adalah sketsa bantu. Cek ulang ukuran di lapangan.</p>
     </header>
-    <div class="px-6 py-4 space-y-5 overflow-y-auto">
+    <div id="exp-main" class="px-6 py-4 space-y-5 overflow-y-auto">
       <fieldset>
         <legend class="field-label">Format</legend>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -211,11 +216,24 @@
       </fieldset>
       <label class="flex items-start gap-2"><input type="checkbox" name="note" checked class="accent-ink mt-1"><span>Tulis catatan di gambar: <i>"Sketsa bantu – cek ulang di lapangan"</i></span></label>
       <div id="exp-warn" class="flex gap-2 rounded-lg bg-red-50 ring-1 ring-red-200 p-3 text-xs text-red-900"></div>
+      <button type="button" class="btn-ghost w-full" data-boq><svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 5h11M9 12h11M9 19h11M4 5h1M4 12h1M4 19h1"/></svg>Lihat daftar material (BOQ)</button>
+    </div>
+    <!-- Selesai export: konfirmasi + kirim -->
+    <div id="exp-done" class="px-6 py-6 space-y-4" hidden aria-live="polite">
+      <div class="flex items-center gap-3"><span class="grid place-items-center w-10 h-10 rounded-full bg-green-700 text-white shrink-0"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+        <div class="min-w-0"><b class="block">File siap</b><span id="exp-done-file" class="block font-mono text-sm text-muted truncate"></span></div></div>
+      <p id="exp-done-hint" class="text-sm text-muted"></p>
+      <div class="grid sm:grid-cols-2 gap-2">
+        <button type="button" class="btn-primary !h-10" id="exp-share"><svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.4M8.2 13.2l7.6 4.4"/></svg>Kirim gambar PNG</button>
+        <button type="button" class="btn-ghost !h-10" data-boq>Daftar material (BOQ)</button>
+      </div>
     </div>
     <footer class="flex items-center gap-2 px-6 py-4 border-t border-line bg-paper rounded-b-xl">
       <span id="exp-file" class="font-mono text-xs text-muted truncate"></span>
-      <button value="cancel" class="ml-auto btn-ghost">Batal</button>
-      <button id="do-export" value="ok" class="btn-primary">Export</button>
+      <button value="cancel" class="ml-auto btn-ghost" id="exp-cancel">Batal</button>
+      <button type="button" id="exp-again" class="ml-auto btn-ghost" hidden>Format lain</button>
+      <button type="button" id="do-export" class="btn-primary">Export</button>
+      <button value="ok" id="exp-close" class="btn-primary" hidden>Selesai</button>
     </footer>
   </form>
 </dialog>
@@ -226,7 +244,7 @@
     <header class="flex items-center px-6 pt-5 pb-3 border-b border-line">
       <h2 id="dlg-keys-title" class="font-cond font-bold text-2xl">Pintasan</h2>
       <a href="docs.html" target="_blank" class="ml-auto mr-2 btn-ghost">Dokumentasi lengkap ↗</a>
-      <button data-close class=" w-8 h-8 grid place-items-center rounded hover:bg-black/5" aria-label="Tutup">✕</button>
+      <button data-close class=" w-8 h-8 grid place-items-center rounded hover:bg-black/5" aria-label="Tutup"><svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
     </header>
     <div class="keys px-6 py-4 grid sm:grid-cols-2 gap-x-8 gap-y-5 overflow-y-auto">
       <section><h3>Alat</h3><dl>
@@ -255,8 +273,8 @@
       <section><h3>Tampilan</h3><dl>
         <dt>Scroll</dt><dd>Zoom</dd><dt><kbd>Spasi</kbd> / tombol tengah</dt><dd>Geser kanvas</dd>
         <dt><kbd>Z</kbd></dt><dd>Zoom ke pilihan</dd><dt><kbd>Shift</kbd><kbd>Z</kbd></dt><dd>Lihat semua</dd><dt><kbd>F3</kbd> <kbd>F7</kbd> <kbd>F8</kbd></dt><dd>Snap, grid, ortho</dd>
-        <dt><kbd>Tab</kbd></dt><dd>Mode fokus (tutup panel)</dd><dt><kbd>Ctrl</kbd><kbd>[</kbd> <kbd>]</kbd></dt><dd>Buka/tutup panel kiri, kanan</dd><dt>Menu kiri</dt><dd>Klik lagi menu yang aktif = tutup panel</dd>
-        <dt><kbd>?</kbd></dt><dd>Pintasan ini</dd>
+        <dt><kbd>Ctrl</kbd><kbd>.</kbd></dt><dd>Mode fokus (tutup panel)</dd><dt><kbd>Tab</kbd> di kanvas</dt><dd>Pilih komponen berikutnya</dd><dt><kbd>Ctrl</kbd><kbd>[</kbd> <kbd>]</kbd></dt><dd>Buka/tutup panel kiri, kanan</dd><dt>Menu kiri</dt><dd>Klik lagi menu yang aktif = tutup panel</dd>
+        <dt><kbd>Ctrl</kbd><kbd>K</kbd></dt><dd>Asisten AI</dd><dt><kbd>?</kbd></dt><dd>Pintasan ini</dd>
       </dl></section>
       <section class="sm:col-span-2"><h3>Baris perintah</h3><dl class="!grid-cols-[auto_1fr_auto_1fr_auto_1fr]">
         <dt><kbd>L</kbd></dt><dd>Duct</dd><dt><kbd>REC</kbd></dt><dd>Ruangan</dd><dt><kbd>DIM</kbd></dt><dd>Ukur</dd>
@@ -264,6 +282,23 @@
         <dt><kbd>TEXT</kbd></dt><dd>Teks</dd><dt><kbd>Z</kbd></dt><dd>Lihat semua</dd><dt><kbd>U</kbd></dt><dd>Undo</dd>
       </dl></section>
     </div>
+  </div>
+</dialog>
+
+<!-- ============ DIALOG DAFTAR MATERIAL (BOQ) ============ -->
+<dialog id="dlg-boq" class="dlg w-[min(760px,calc(100vw-2rem))]" aria-labelledby="dlg-boq-title">
+  <div class="flex flex-col max-h-[85vh]">
+    <header class="flex items-start gap-3 px-6 pt-5 pb-3 border-b border-line">
+      <div class="mr-auto"><h2 id="dlg-boq-title" class="font-cond font-bold text-2xl">Daftar material</h2>
+        <p class="text-sm text-muted mt-0.5">Dihitung dari gambar. Belum termasuk sisa potong, sambungan, dan sealant.</p></div>
+      <button data-close class="w-8 h-8 grid place-items-center rounded hover:bg-black/5 shrink-0" aria-label="Tutup"><svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </header>
+    <div id="boq-body" class="overflow-y-auto px-6 py-4"></div>
+    <footer class="flex flex-wrap items-center gap-2 px-6 py-4 border-t border-line bg-paper rounded-b-xl">
+      <span id="boq-sum" class="text-xs text-muted mr-auto"></span>
+      <button type="button" class="btn-ghost" id="boq-copy">Salin teks</button>
+      <button type="button" class="btn-primary" id="boq-csv">Unduh CSV (Excel)</button>
+    </footer>
   </div>
 </dialog>
 

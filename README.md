@@ -1,44 +1,60 @@
 # Temandor
 
-Tool web untuk membantu **mandor pemula** membuat sketsa 2D jalur ducting dan ventilasi (bergaya AutoCAD, export ke DXF).
+Tool web open source untuk membantu **mandor dan teknisi HVAC pemula** membuat sketsa 2D denah ruangan serta jalur ducting dan ventilasi bergaya AutoCAD tanpa harus menguasai AutoCAD, lalu mengekspornya ke **DXF R12 berlayer rapi**, **PDF vektor berskala + kop**, **PNG**, dan **daftar material (BOQ)**.
 
-## Struktur
+> Setiap hasil export menyertakan pengingat **"Sketsa bantu - cek ulang ukuran di lapangan"**. Semua data proyek tersimpan lokal di browser perangkatmu tanpa login.
 
-- **Aplikasi real (Nuxt 4)** di root: `app/`, `shared/cad/`, `docs/`.
-- [`prototype/`](prototype/) — Prototype P1 (`prototype/app/`), server MCP (`prototype/mcp/`), dan mock UI P0 (`prototype/mock/`). Lihat [`prototype/README.md`](prototype/README.md); keputusan khusus prototype di [`prototype/docs/adr/`](prototype/docs/adr/).
-- [`docs/adr/`](docs/adr/) — Keputusan untuk aplikasi real: stack, penyimpanan, DXF, scope MVP, HP.
-- [`docs/tickets/`](docs/tickets/) — Tiket implementasi aplikasi real, M0 validasi sampai M6 AI & MCP.
-- [`PRODUCT.md`](PRODUCT.md), [`DESIGN.md`](DESIGN.md) — Konteks produk dan sistem desain.
+## Fitur Utama (v0.1.0)
 
-## Menjalankan aplikasi real
+- **Editor 2D komponen parametrik**: gambar jalur duct (Supply Air `SA` & Exhaust Air `EA`, kotak & bulat, satuan `inch` atau `mm`) dengan pemasangan **elbow otomatis** di tiap belokan (radius `1,0x`/`1,5x`, siku + vane, sudut bebas, maupun reducing).
+- **Denah ruangan & arsitektur**: ruangan kotak (`K` / ketik `6x4`), ruangan bebas poligon (`P`), partisi (`W`), kolom, pintu/jendela/bukaan yang otomatis menempel & memotong dinding, tangga, lift, shaft, balok, garis ukur, teks bergaya, catatan + panah, dan coretan tangan.
+- **Validasi non-blocking**: menandai ujung terbuka, ukuran beda tanpa transisi, sistem tercampur, debit kosong, dan duct menabrak kolom/tangga/lift langsung di kanvas tanpa melarang simpan atau export.
+- **Export lengkap**:
+  - **DXF R12 (`AC1009`)**: 12 layer AutoCAD (`DUCT-SA`, `DUCT-EA`, `EQUIPMENT`, `DIFFUSER`, `HANGER`, `DIMENSION`, `TEXT`, `A-WALL`, `A-COLS`, `A-DOOR`, `A-MISC`, `MARKUP`) + linetype `DASHED`, satuan `mm` atau `inch`.
+  - **PDF vektor berskala + kop**: A4/A3, potret/lanskap, skala `1:50`/`1:100`/`1:200` atau muat ke kertas, kop pojok kanan bawah.
+  - **PNG & Kirim**: latar kertas putih untuk WhatsApp lewat Web Share API (atau fallback unduh).
+  - **Daftar material (BOQ)**: panjang duct, fitting, perlengkapan, gantungan, dan equipment; unduh CSV Excel Indonesia (`;` & koma desimal) atau salin teks WhatsApp.
+  - **Cadangan `.json` v2**: simpan lokal di IndexedDB, ekspor/impor `.json`, dan migrasi otomatis dari berkas v1 prototype.
 
-Butuh Bun 1.4 (`packageManager` di `package.json`) dan Node 26 (`.nvmrc`) untuk tooling.
+- **Asisten AI (BYOK Claude) & Server MCP**:
+  - Di editor, klik **Tanya AI** (`Ctrl+K`) dengan kunci API Anthropic Claude milik sendiri (tersimpan lokal di browser, hanya dikirim langsung ke `api.anthropic.com`). Tiap batch perubahan = 1 langkah undo dan komponen langsung di-zoom.
+  - Server MCP stdio (`packages/mcp/`) untuk Claude Code / Claude Desktop memakai inti CAD yang sama (`@temandor/core`), mendukung baca/edit file `.json` dan export `.dxf` di folder `TEMANDOR_DIR`.
+
+## Struktur Repositori (Bun Workspace)
+
+- `app/`: aplikasi **Nuxt 4** SPA statis (landing `/`, daftar proyek `/proyek`, editor `/editor/[id]`, dokumentasi `/docs`, halaman 404/error).
+- `packages/core/` (`@temandor/core`, dire-export lewat `shared/cad/`): inti CAD **TypeScript murni** (tanpa impor Vue, Nuxt, Pinia, atau DOM) mencakup skema Zod v2, geometri, komponen, SVG, DXF R12, tata letak PDF, validasi, BOQ, dan aksi AI.
+- `packages/mcp/` (`@temandor/mcp`): server MCP stdio (`@modelcontextprotocol/sdk`) untuk integrasi Claude Code / Claude Desktop.
+- `tests/e2e/` & `test/nuxt/`: tes integrasi Nuxt, tes unit Vitest, tes aksesibilitas axe-core, dan tes E2E Playwright (desktop + HP).
+- [`docs/adr/`](docs/adr/) & [`docs/tickets/`](docs/tickets/): catatan keputusan arsitektur dan tiket implementasi M0 sampai M6.
+- [`prototype/`](prototype/): arsip acuan prototype P1 (HTML + vanilla JS) dan server MCP awal.
+- [`PRODUCT.md`](PRODUCT.md), [`DESIGN.md`](DESIGN.md), [`CHANGELOG.md`](CHANGELOG.md): konteks produk, sistem desain, dan catatan rilis.
+
+## Cara Mengembangkan
+
+Membutuhkan **Bun 1.4+** (`packageManager` di `package.json`) dan **Node.js 26+** (`.nvmrc`).
 
 ```bash
 bun install
-bun run dev        # http://localhost:3000
-bun run generate   # .output/public (situs statis)
-bun run preview    # pratinjau .output/public di http://localhost:3000 (server statis kecil)
-bun run lint
-bun run typecheck
-bun run test       # Vitest: core CAD + komponen Nuxt
-bun run test:e2e   # Playwright: Chromium desktop + viewport HP
+bun run dev        # jalankan dev server di http://localhost:3000
+bun run generate   # bangun situs statis ke .output/public
+bun run preview    # pratinjau hasil generate di http://localhost:3000
+bun run mcp        # jalankan server MCP (stdio, env TEMANDOR_DIR)
+bun run lint       # ESLint
+bun run typecheck  # Nuxt + vue-tsc
+bun run test       # Vitest (packages/core + packages/mcp + modul Nuxt)
+bun run test:e2e   # Playwright (Chromium desktop + viewport HP)
 ```
 
-TypeScript dipakai di **6.0.3**, bukan 7.0.2: `vue-tsc` 3.3.14 belum mendukung TypeScript 7 (`./lib/tsc` tidak diekspor). Naikkan lagi setelah `vue-tsc` mendukung.
+> Catatan: TypeScript dikunci pada `^6.0.3` sampai `vue-tsc` mendukung TypeScript 7.
 
-Core CAD di `shared/cad/` adalah TypeScript murni: tidak boleh meng-import Vue, Nuxt, atau DOM.
-
-## Menjalankan prototype
+## Menjalankan Arsip Prototype
 
 ```bash
-# Jalankan server statis lokal
 python -m http.server 5179 --directory prototype/app
-
-# Jalankan tes logika inti + server MCP
 node prototype/app/test.js
 ```
 
 ## Lisensi
 
-Kode sumber: [Apache License 2.0](LICENSE). Nama dan logo Temandor bukan bagian dari lisensi ini.
+Kode sumber dilisensikan di bawah [Apache License 2.0](LICENSE). Nama dan logo Temandor bukan bagian dari lisensi tersebut.

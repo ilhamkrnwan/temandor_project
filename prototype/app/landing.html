@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Temandor · Sketsa ducting rapi tanpa harus jago AutoCAD</title>
+<meta name="description" content="Rangkai duct, elbow, dan diffuser seperti di lapangan. Temandor menandai yang janggal dan mengeluarkan DXF berlayer untuk drafter. Gratis, jalan di browser.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="js/ui.js"></script>
+<link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="css/landing.css">
+</head>
+<body class="lp bg-cad text-white font-sans text-[16px]">
+
+<a href="#mulai" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 btn-primary">Langsung ke form proyek baru</a>
+
+<!-- ============ BAR ATAS ============ -->
+<header class="lp-bar">
+  <div class="tape absolute inset-x-0 top-0 h-[3px]"></div>
+  <div class="max-w-7xl mx-auto h-14 px-4 sm:px-6 flex items-center gap-6">
+    <a href="landing.html" class="flex items-center gap-2 shrink-0" aria-label="Temandor, halaman depan">
+      <span class="grid place-items-center w-8 h-8 rounded bg-hazard"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="#17191c" stroke-width="2.4"><path d="M3 6h7a8 8 0 0 1 8 8v7M3 12h7a2 2 0 0 1 2 2v7"/></svg></span>
+      <span class="font-cond font-bold text-xl tracking-wide">TEMANDOR</span>
+    </a>
+    <nav class="hidden md:flex items-center gap-5 text-sm text-white/75" aria-label="Bagian halaman">
+      <a href="#cara-kerja" class="hover:text-white">Cara kerja</a><a href="#dxf" class="hover:text-white">Hasil DXF</a><a href="#tanya" class="hover:text-white">Tanya jawab</a><a href="docs.html" class="hover:text-white">Docs</a>
+    </nav>
+    <div class="ml-auto flex items-center gap-2">
+      <a href="index.html" class="btn-primary !h-9 !px-4">Buka aplikasi</a>
+    </div>
+  </div>
+</header>
+
+<main>
+<!-- ============ VIEWPORT PERTAMA: lembar gambar (gambar asli + kop gambar = form) ============ -->
+<section class="lp-hero" aria-labelledby="h-hero">
+  <div class="lp-grid" aria-hidden="true"></div>
+  <div class="lp-frame">
+    <div class="lp-zones lp-zones-x" aria-hidden="true"><span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span></div>
+    <div class="lp-zones lp-zones-y" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span></div>
+
+    <div class="lp-hero-copy">
+      <h1 id="h-hero" class="lp-display">Sketsa ducting rapi.<br><span class="text-hazard">Tanpa harus jago AutoCAD.</span></h1>
+      <p class="mt-4 lg:mt-5 text-base lg:text-lg text-white/80 max-w-lg">Rangkai duct, Temandor tandai yang janggal, keluar DXF berlayer.</p>
+    </div>
+
+    <figure class="lp-hero-art" aria-labelledby="cap-hero">
+      <div id="hero-drawing" class="h-full"></div>
+      <figcaption id="cap-hero" class="lp-art-cap"><span>Contoh: Kantor Lt. 2, skala 1:100</span><span class="flex gap-4"><span class="lg-key warn">peringatan</span><span class="lg-key feat">otomatis</span></span></figcaption>
+    </figure>
+
+    <!-- Kop gambar di sudut lembar = form proyek baru (berfungsi) -->
+    <form id="mulai" class="kop" aria-label="Proyek baru">
+      <div class="kop-row kop-title"><span class="kop-brand">TEMANDOR</span><span>LEMBAR BARU · SKALA 1:100</span></div>
+      <div class="kop-row">
+        <label class="kop-cell col-span-2"><span>Nama proyek</span><input name="nama" autocomplete="off" placeholder="Boleh dikosongkan"></label>
+      </div>
+      <div class="kop-row">
+        <div class="kop-cell"><span id="lbl-ruang">Ruangan (m)</span>
+          <div class="flex items-center gap-2" role="group" aria-labelledby="lbl-ruang"><input name="p" type="number" min="1" max="200" step="0.1" value="9" aria-label="Panjang ruangan (m)" class="!w-16"><span class="text-white/55">×</span><input name="l" type="number" min="1" max="200" step="0.1" value="6" aria-label="Lebar ruangan (m)" class="!w-16"></div></div>
+        <div class="kop-cell"><span id="lbl-unit">Satuan duct</span>
+          <div class="kop-seg" role="radiogroup" aria-labelledby="lbl-unit"><label><input type="radio" name="satuan" value="inch" checked>inch</label><label><input type="radio" name="satuan" value="mm">mm</label></div></div>
+      </div>
+      <div class="kop-foot">
+        <button class="btn-primary !h-11 !px-6 !text-[15px]">Mulai gambar <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+        <p class="text-sm text-white/70">Gratis, tanpa daftar.</p>
+      </div>
+    </form>
+  </div>
+</section>
+
+<!-- ============ PUNCH LIST: kamera gambar ikut tiap catatan ============ -->
+<section id="cara-kerja" class="lp-punch" aria-labelledby="h-punch">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-16 lg:py-24">
+    <h2 id="h-punch" class="lp-h2 max-w-3xl">Saat kamu menggambar, Temandor ikut mengecek.</h2>
+
+    <div class="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+      <div class="lp-cam-wrap"><div id="cam" class="lp-cam" aria-hidden="true"></div>
+        <div class="lp-cam-foot"><span class="flex gap-4"><span class="lg-key warn">peringatan</span><span class="lg-key feat">otomatis</span></span><p id="cam-stamp" class="lp-stamp"></p></div></div>
+      <ol class="lp-list" id="punch">
+        <li data-pin="0" class="feat"><span class="lp-num"><b>1</b><svg class="num-ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><div><h3>Elbow dipasang sendiri</h3>
+          <p>Tekan <kbd>D</kbd>, klik titik demi titik. Tiap belokan dapat elbow.</p></div></li>
+        <li data-pin="1" class="warn"><span class="lp-num"><b>2</b><svg class="num-ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><div><h3>Ujung yang belum tersambung</h3>
+          <p>Ditandai merah. Ketuk untuk lihat cara perbaikannya.</p></div></li>
+        <li data-pin="2" class="warn"><span class="lp-num"><b>3</b><svg class="num-ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><div><h3>Ukuran beda tanpa transisi</h3>
+          <p><span id="ex-size" class="font-mono text-sm"></span>? Ditandai, dengan saran transisi.</p></div></li>
+        <li data-pin="3" class="feat"><span class="lp-num"><b>4</b><svg class="num-ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><div><h3>Debit dijumlah otomatis</h3>
+          <p>Total per FCU dan fan tampil di gambar.</p></div></li>
+        <li data-pin="4" class="feat"><span class="lp-num"><b>5</b><svg class="num-ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><div><h3>Gantungan tiap 1,5 m</h3>
+          <p>Titik gantungan dan label ukuran digambar sendiri.</p></div></li>
+        <li class="lp-end" id="punch-end" aria-hidden="true"></li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DXF ============ -->
+<section id="dxf" class="lp-paper" aria-labelledby="h-dxf">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-16 lg:py-24 grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] items-start">
+    <div>
+      <h2 id="h-dxf" class="lp-h2 !text-ink">Keluar sebagai DXF yang bisa dipakai drafter.</h2>
+      <p class="mt-4 text-[17px] text-muted max-w-xl">Tiap jenis garis di layer sendiri. Satuan mm atau inch.</p>
+      <div class="mt-7 flex flex-wrap items-center gap-3">
+        <button type="button" class="btn-primary !h-11 !px-5 !text-[15px]" data-dxf><svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M4 20h16M12 4v12m-5-5 5 5 5-5"/></svg>Unduh DXF contoh</button>
+      </div>
+      <p class="lp-note mt-8">Tiap export bercatatan <b>"Sketsa bantu – cek ulang ukuran di lapangan"</b>.</p>
+    </div>
+    <div class="lp-layers">
+      <div id="dxf-view" class="lp-dxf-view"></div>
+      <div class="lp-layers-head"><span id="lbl-layers">Layer di file DXF</span><span id="layers-count" aria-live="polite"></span></div>
+      <div id="layers" class="lp-layer-grid" role="group" aria-labelledby="lbl-layers"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LAPANGAN + AI ============ -->
+<section class="lp-band" aria-labelledby="h-lap">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-16 lg:py-24 grid gap-12 lg:grid-cols-2">
+    <div>
+      <h2 id="h-lap" class="lp-h2">Di HP: buka, cek, ubah sedikit.</h2>
+      <div class="mt-8 grid gap-10 sm:grid-cols-[15.5rem_minmax(0,1fr)] items-center">
+        <!-- Mockup ponsel (CSS) berisi tiruan editor versi HP; gambar = proyek contoh asli. Demo berulang: cubit → ketuk → hapus & urungkan -->
+        <figure class="lp-device" id="device" aria-label="Contoh tampilan editor Temandor di HP: zoom dua jari, ketuk elbow, hapus lalu urungkan">
+          <span class="dv-btn dv-power" aria-hidden="true"></span><span class="dv-btn dv-vol1" aria-hidden="true"></span><span class="dv-btn dv-vol2" aria-hidden="true"></span>
+          <div class="dv-screen" aria-hidden="true">
+            <div class="dv-status"><b>9:41</b><span class="dv-island"></span><span class="dv-sig"><i></i><i></i><i></i><i></i><em></em></span></div>
+            <div class="ph-bar"><span class="ph-logo"></span><b>Contoh – Kantor Lt. 2</b><span class="ph-export">Export</span></div>
+            <div class="ph-canvas" id="ph-canvas">
+              <div class="ph-zoom"><div id="phone-drawing" class="absolute inset-0"></div><span class="ph-sel"></span><span class="ph-gone"></span></div>
+              <div class="ph-ctx"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></svg><svg viewBox="0 0 24 24"><path d="M12 3v18M8 7 3 12l5 5M16 7l5 5-5 5"/></svg><svg viewBox="0 0 24 24"><path d="M7 11V8a5 5 0 0 1 10 0v3M5 11h14v10H5z"/></svg><svg viewBox="0 0 24 24" class="red" id="ph-del"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></div>
+              <div class="ph-toast">1 komponen dihapus<b id="ph-undo">Urungkan</b></div>
+              <span class="ph-touch t1"></span><span class="ph-touch t2"></span>
+            </div>
+            <div class="ph-sheet"><span class="ph-grab"></span><b>Elbow</b><span class="ph-row"><span>Ukuran</span><span class="font-mono" id="ph-size"></span></span><span class="ph-row"><span>Sudut</span><span class="font-mono" id="ph-ang"></span></span></div>
+            <div class="ph-rail"><span class="on"></span><span></span><span></span><span></span><span></span></div>
+            <span class="dv-home"></span><span class="dv-glare"></span>
+          </div>
+          <figcaption class="sr-only">Tampilan contoh, bukan tangkapan layar</figcaption>
+        </figure>
+        <div>
+          <dl class="lp-facts" id="ph-facts">
+            <div><dt>Dua jari</dt><dd>Zoom dan geser.</dd></div>
+            <div><dt>Ketuk</dt><dd>Ubah ukuran atau debit.</dd></div>
+            <div><dt>Urungkan</dt><dd>Salah hapus? Balikkan.</dd></div>
+          </dl>
+        </div>
+      </div>
+    </div>
+    <div aria-labelledby="h-ai">
+      <h2 id="h-ai" class="lp-h2">Atau minta AI yang menggambar.</h2>
+      <div class="lp-chat mt-8" aria-label="Contoh percakapan dengan asisten AI">
+        <p class="lp-chat-user">Tambah ruang rapat 6x5 m di sebelah kanan, dengan pintu dan 2 diffuser</p>
+        <p class="lp-chat-tool"><span><svg viewBox="0 0 24 24" class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Membaca gambar</span><span><svg viewBox="0 0 24 24" class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Menambah komponen</span><span><svg viewBox="0 0 24 24" class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Menggambar jalur duct</span></p>
+        <p class="lp-chat-bot">Sudah: ruang rapat 6×5 m, 1 pintu, 2 diffuser 300 cfm tersambung.</p>
+        <span class="lp-chat-tag">contoh</span>
+      </div>
+      <p class="mt-4 text-white/65 text-sm max-w-md">Pakai Claude dengan kunci API sendiri.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TANYA JAWAB ============ -->
+<section id="tanya" class="lp-paper" aria-labelledby="h-faq">
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 py-16 lg:py-24">
+    <h2 id="h-faq" class="lp-h2 !text-ink">Tanya jawab</h2>
+    <div class="lp-faq mt-8">
+      <details><summary>Harus bisa AutoCAD dulu?</summary><p>Tidak. AutoCAD cuma dipakai drafter untuk membuka DXF-nya.</p></details>
+      <details><summary>Berapa biayanya?</summary><p>Gratis. AI opsional, dibayar ke Anthropic lewat kunci API sendiri.</p></details>
+      <details><summary>Gambar saya disimpan di mana?</summary><p>Di browser perangkatmu, tanpa akun.</p></details>
+      <details><summary>DXF-nya bisa dibuka di AutoCAD?</summary><p>Ya, format DXF R12. Masih prototype: cek ulang sebelum dipakai kerja.</p></details>
+      <details><summary>Sistem apa saja yang bisa digambar?</summary><p>Supply (SA) dan exhaust (EA). Return dan fresh air menyusul.</p></details>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PENUTUP ============ -->
+<section class="lp-close" aria-labelledby="h-close">
+  <div class="lp-grid" aria-hidden="true"></div>
+  <div class="relative max-w-7xl mx-auto px-4 sm:px-6 py-16 lg:py-20 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,30rem)] items-center">
+    <div>
+      <h2 id="h-close" class="lp-h2 uppercase">Ukur ruangannya,<br>sisanya kita rangkai.</h2>      <div class="mt-8 flex flex-wrap gap-2"><a href="#mulai" class="btn-primary !h-12 !px-6 !text-base">Mulai gambar</a><button type="button" class="btn-ghost lp-ghost !h-12 !px-6 !text-base" data-demo>Lihat proyek contoh</button></div>
+    </div>
+    <!-- Foto placeholder (Unsplash License): ganti dengan foto hasil pemasangan sendiri -->
+    <figure class="lp-photo aspect-[4/3] lg:aspect-[4/5]">
+      <img src="https://images.unsplash.com/photo-1708705261211-b2a244a811dc?w=900&q=70&auto=format&fit=crop" srcset="https://images.unsplash.com/photo-1708705261211-b2a244a811dc?w=600&q=70&auto=format&fit=crop 600w, https://images.unsplash.com/photo-1708705261211-b2a244a811dc?w=900&q=70&auto=format&fit=crop 900w, https://images.unsplash.com/photo-1708705261211-b2a244a811dc?w=1300&q=70&auto=format&fit=crop 1300w" sizes="(min-width: 1024px) 30rem, 92vw" width="900" height="1349" loading="lazy" decoding="async" alt="Duct bulat dan pipa tergantung di plafon koridor gedung, sudah terpasang rapi" style="object-position: 50% 20%">
+    </figure>
+  </div>
+</section>
+</main>
+
+<footer class="lp-foot">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-white/65">
+    <span class="font-cond font-bold text-white tracking-wide">TEMANDOR</span>
+    <span>Prototype sketsa ducting &amp; ventilasi</span>
+    <span>Foto: <a href="https://unsplash.com/photos/30fvyCPWNkQ?utm_source=temandor&utm_medium=referral" target="_blank" rel="noopener" class="underline underline-offset-2 hover:text-white">Nopparuj Lamaikul</a>, Unsplash</span>
+    <nav class="flex flex-wrap gap-x-5 gap-y-2 ml-auto" aria-label="Tautan bawah"><a href="index.html" class="hover:text-white">Aplikasi</a><a href="docs.html" class="hover:text-white">Dokumentasi</a><a href="docs.html#kontribusi" class="hover:text-white">Kontribusi</a><a href="docs.html#dukung" class="hover:text-white">Dukung</a><a href="settings.html" class="hover:text-white">Pengaturan</a></nav>
+  </div>
+</footer>
+
+<script src="js/geom.js"></script>
+<script src="js/model.js"></script>
+<script src="js/render.js"></script>
+<script src="js/dxf.js"></script>
+<script>
+  // Gambar contoh asli (renderer aplikasi) + pin di koordinat komponen sungguhan
+  const demo = demoProject(), cn = connect(demo), cx = ctxOf(demo, cn), warns = validate(demo, cn);
+  const center = n => { const b = primBounds(worldPrims(n, cx)); return [(b[0] + b[2]) / 2, (b[1] + b[3]) / 2]; };
+  const straights = demo.nodes.filter(n => n.type === 'straight').sort((a, b) => b.L - a.L);
+  const wOpen = warns.find(w => w.kind === 'open') || warns[0], wSize = warns.find(w => w.kind === 'size') || warns[0];
+  // Pin: titik asli komponen + penanda digeser sedikit (garis penunjuk) supaya label gambar tetap terbaca.
+  // Merah hanya untuk peringatan dari validate(); fitur otomatis memakai cincin kuning.
+  const PINS = [
+    ['feat', center(demo.nodes.find(n => n.type === 'elbow'))], ['warn', wOpen.pos], ['warn', wSize.pos],
+    ['feat', center(demo.nodes.find(n => n.type === 'fcu'))], ['feat', center(straights[0])],
+  ];
+  $('#cam-stamp').textContent = `${warns.length} CATATAN · TETAP BISA EXPORT`; // jujur: peringatan tidak hilang, export tetap boleh
+  $('#ex-size').textContent = wSize.detail.split('. ')[0]; // contoh ukuran sama persis dengan pin 3
+  const { vb, svg } = docSVG(demo, { pal: 'screen', sw: 0 });
+  const R = vb[2] / 58, OFF = [R * 1.5, -R * 2.3], at = p => [p[0] + OFF[0], p[1] + OFF[1]];
+  const pinsSVG = PINS.map(([kind, p], i) => { const q = at(p); return `<g class="pin ${kind}" data-i="${i}">
+      <path class="pin-lead" d="M${f1(p[0])} ${f1(p[1])}L${f1(q[0])} ${f1(q[1])}" stroke-width="${f1(R * .12)}"/><circle class="pin-at" cx="${f1(p[0])}" cy="${f1(p[1])}" r="${f1(R * .28)}"/>
+      <g transform="translate(${f1(q[0])} ${f1(q[1])})"><circle class="pin-halo" r="${f1(R * 1.6)}"/><circle class="pin-dot" r="${f1(R)}" stroke-width="${f1(R * .16)}"/>
+      <text class="pin-n" y="${f1(R * 0.36)}" font-size="${f1(R * 1.05)}" text-anchor="middle">${i + 1}</text>
+      <path class="pin-ok" d="M${f1(-R * .45)} 0l${f1(R * .32)} ${f1(R * .34)}l${f1(R * .6)} ${f1(-R * .7)}" fill="none" stroke-width="${f1(R * .28)}" stroke-linecap="round" stroke-linejoin="round"/></g></g>`; }).join('');
+  const withPins = svg.replace('<svg ', '<svg class="w-full h-full" preserveAspectRatio="xMidYMid meet" ').replace('</svg>', `<g class="pins">${pinsSVG}</g></svg>`);
+  $('#hero-drawing').innerHTML = withPins.replace('<svg ', '<svg role="img" aria-label="Gambar contoh: denah kantor dengan jalur duct supply dan exhaust, diberi 5 penanda" ');
+  $('#cam').innerHTML = withPins;
+  // HP: layar pertama memuat potongan gambar di sekitar pin 1–3 (gambar penuh ada di kamera di bawah)
+  const heroSvg = $('#hero-drawing svg'), MOB = matchMedia('(max-width: 1023px)');
+  function crop() {
+    if (!MOB.matches) return heroSvg.setAttribute('viewBox', vb.map(f1).join(' '));
+    const ps = PINS.slice(0, 3).flatMap(([, p]) => [p, at(p)]), xs = ps.map(p => p[0]), ys = ps.map(p => p[1]), m = R * 3;
+    heroSvg.setAttribute('viewBox', [Math.min(...xs) - m, Math.min(...ys) - m, Math.max(...xs) - Math.min(...xs) + 2 * m, Math.max(...ys) - Math.min(...ys) + 2 * m].map(f1).join(' '));
+  }
+  MOB.addEventListener('change', crop); crop();
+  // Tiruan layar HP: potongan gambar yang sama, elbow kanan atas "terpilih"
+  const eN = demo.nodes.find(n => n.type === 'elbow'), elb = PINS[0][1], pw = R * 16;
+  $('#ph-size').textContent = sizeLabel(eN.w, eN.h, eN.shape, demo.unit); $('#ph-ang').textContent = eN.angle + '°'; // panel = elbow yang terlihat
+  $('#phone-drawing').innerHTML = svg.replace('<svg ', `<svg class="w-full h-full" preserveAspectRatio="xMidYMid slice" `).replace(/viewBox="[^"]*"/, `viewBox="${[elb[0] - pw * .55, elb[1] - pw * .5, pw, pw * 1.3].map(f1).join(' ')}"`);
+
+  // Kamera: tiap catatan memindah & memperbesar gambar ke pin-nya (seperti klik "Lihat" di daftar warning aplikasi)
+  const cam = $('#cam svg'), full = [...vb], aspect = vb[3] / vb[2], REDUCE = matchMedia('(prefers-reduced-motion: reduce)');
+  let cur = [...full], anim = 0;
+  const frame = v => cam.setAttribute('viewBox', v.map(f1).join(' '));
+  function look(to) {
+    cancelAnimationFrame(anim);
+    if (REDUCE.matches) { cur = to; return frame(to); }
+    const from = [...cur], t0 = performance.now();
+    const step = t => { const k = Math.min(1, (t - t0) / 700), e = 1 - Math.pow(2, -10 * k); cur = from.map((v, i) => v + (to[i] - v) * e); frame(cur); if (k < 1) anim = requestAnimationFrame(step); };
+    anim = requestAnimationFrame(step);
+  }
+  const zoomOn = p => { const w = full[2] * 0.42, h = w * aspect, c = [p[0] + OFF[0] / 2, p[1] + OFF[1] / 2]; return [c[0] - w / 2, c[1] - h / 2, w, h]; };
+  const items = $$('#punch li[data-pin]'), wrap = $('.lp-cam-wrap');
+  function activate(i) {
+    items.forEach((li, j) => { li.classList.toggle('on', j === i); li.classList.toggle('done', j < i); });
+    $$('.lp-cam .pin').forEach((g, j) => { g.classList.toggle('on', j === i); g.classList.toggle('done', j < i); });
+    wrap.classList.toggle('all-done', i === items.length);
+    look(i === items.length || i < 0 ? full : zoomOn(PINS[i][1]));
+  }
+  // Sentinel di akhir daftar: kamera masih menempel saat semua catatan tercentang dan stempel muncul
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) activate(e.target.id === 'punch-end' ? items.length : +e.target.dataset.pin); }), { rootMargin: '-45% 0px -45% 0px' });
+  [...items, $('#punch-end')].forEach(el => io.observe(el));
+  activate(-1);
+
+  // Demo ponsel: cubit → ketuk → hapus & urungkan. Berjalan hanya saat ponsel terlihat; reduced motion = diam (elbow terpilih).
+  const dev = $('#device'), canv = $('#ph-canvas'), facts = $$('#ph-facts > div');
+  function phoneAnchors() { // posisi elbow, tombol hapus, dan "Urungkan" dalam % kanvas ponsel
+    const vbp = $('#phone-drawing svg').getAttribute('viewBox').split(' ').map(Number), W = canv.offsetWidth, H = canv.offsetHeight;
+    const s = Math.max(W / vbp[2], H / vbp[3]), px = (elb[0] - vbp[0]) * s + (W - vbp[2] * s) / 2, py = (elb[1] - vbp[1]) * s + (H - vbp[3] * s) / 2;
+    canv.style.setProperty('--ex', (px / W * 100).toFixed(1) + '%'); canv.style.setProperty('--ey', (py / H * 100).toFixed(1) + '%');
+    canv.style.setProperty('--es', Math.max(28, mmOf(eN.w, demo.unit) * 2.2 * s).toFixed(0) + 'px');
+    const c = canv.getBoundingClientRect(), rel = el => { const r = el.getBoundingClientRect(); return [((r.left + r.width / 2 - c.left) / c.width * 100).toFixed(1) + '%', ((r.top + r.height / 2 - c.top) / c.height * 100).toFixed(1) + '%']; };
+    const d = rel($('#ph-del')), u = rel($('#ph-undo'));
+    canv.style.setProperty('--dx', d[0]); canv.style.setProperty('--dy', d[1]); canv.style.setProperty('--ux', u[0]); canv.style.setProperty('--uy', u[1]);
+  }
+  phoneAnchors(); addEventListener('resize', phoneAnchors);
+  const PHASES = [['pinch', 3200, 0], ['tap', 3000, 1], ['undo', 3600, 2]];
+  let pi = 0, timer = 0, playing = false;
+  function step() {
+    const [ph, ms, fi] = PHASES[pi];
+    dev.dataset.phase = ''; void dev.offsetWidth; dev.dataset.phase = ph; // ulang animasi dari awal
+    facts.forEach((f, i) => f.classList.toggle('on', i === fi));
+    pi = (pi + 1) % PHASES.length; timer = setTimeout(step, ms + 600);
+  }
+  function play(on) {
+    if (on === playing) return; playing = on;
+    $('#ph-facts').classList.toggle('playing', on);
+    if (on) return step();
+    clearTimeout(timer); dev.dataset.phase = ''; facts.forEach(f => f.classList.remove('on'));
+  }
+  if (!REDUCE.matches) {
+    dev.classList.add('pre'); // masuk berputar halus saat pertama terlihat
+    let inView = false;
+    new IntersectionObserver(es => es.forEach(e => { inView = e.isIntersecting; if (inView) dev.classList.remove('pre'); play(inView && !document.hidden); }), { threshold: .45 }).observe(dev);
+    document.addEventListener('visibilitychange', () => play(inView && !document.hidden));
+  }
+
+  // Layer DXF dari daftar layer aplikasi: tiap layer bisa dimatikan di pratinjau, persis seperti di AutoCAD
+  const pal = PAL.paper.col, LY = LAYERS.filter(([k]) => k !== 'coret'), lyOn = new Set(LY.map(([k]) => k));
+  const drawDxf = () => {
+    $('#dxf-view').innerHTML = docSVG(demo, { pal: 'paper', layers: lyOn }).svg.replace('<svg ', '<svg class="w-full h-full" role="img" aria-label="Pratinjau file DXF contoh dengan layer yang sedang menyala" ');
+    $('#layers-count').textContent = `${lyOn.size} dari ${LY.length} menyala`;
+  };
+  $('#layers').innerHTML = LY.map(([k, nm, dxf]) => `<button type="button" class="lp-layer" data-k="${k}" aria-pressed="true"><i style="background:${pal[k]}"></i><code>${dxf}</code><span>${nm}</span></button>`).join('');
+  $('#layers').onclick = e => {
+    const b = e.target.closest('[data-k]'); if (!b) return;
+    const k = b.dataset.k; lyOn.has(k) ? lyOn.delete(k) : lyOn.add(k);
+    b.setAttribute('aria-pressed', lyOn.has(k)); drawDxf();
+  };
+  drawDxf();
+
+  // Aksi: proyek baru dari kop gambar, proyek contoh, DXF contoh
+  const go = p => { try { saveProject(p); location.href = 'editor.html?id=' + p.id; } catch { toast('Penyimpanan browser penuh. Hapus proyek lama dulu dari daftar proyek.'); } };
+  $('#mulai').addEventListener('submit', e => {
+    e.preventDefault();
+    const f = e.target;
+    go(newProject({ name: f.nama.value.trim() || 'Proyek baru', unit: f.satuan.value, scale: '1:100', W: Math.round(+f.p.value * 1000), H: Math.round(+f.l.value * 1000) }));
+  });
+  $$('[data-demo]').forEach(b => (b.onclick = () => go(demoProject())));
+  $('[data-dxf]').onclick = () => { download('contoh-temandor.dxf', toDXF(demoProject(), { layers: new Set(LAYERS.map(l => l[0])), unit: 'mm', note: true }), 'application/dxf'); toast('DXF contoh diunduh: contoh-temandor.dxf'); };
+</script>
+</body>
+</html>
