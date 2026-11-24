@@ -10,7 +10,8 @@ web
 
 ## Stack
 
-Static HTML + Tailwind CDN + vanilla JS, tanpa build step (`prototype/app`). Data proyek di localStorage. Server MCP Node tanpa dependensi (`prototype/mcp`). Rencana jangka panjang di README: Vite + TypeScript.
+- **Aplikasi real (dalam pengerjaan):** Nuxt 4 SPA statis tanpa backend, Nuxt UI 4 + Tailwind 4, render SVG, data di IndexedDB + file JSON berversi. Keputusan di [`docs/adr/`](docs/adr/), tiket di [`docs/tickets/`](docs/tickets/).
+- **Prototype (acuan):** static HTML + Tailwind CDN + vanilla JS, tanpa build step (`prototype/app`). Data proyek di localStorage. Server MCP Node tanpa dependensi (`prototype/mcp`). Keputusan khusus prototype di [`prototype/docs/adr/`](prototype/docs/adr/).
 
 ## Users
 
@@ -31,13 +32,13 @@ Membuat sketsa 2D denah + jalur duct dengan gaya gambar AutoCAD tanpa harus meng
 
 ## Operating Context
 
-Kantor proyek (laptop) dan lapangan (HP, satu tangan, cahaya terang; ADR 0004: HP untuk lihat + edit ringan). Satuan duct inch atau mm, skala 1:50–1:200, sistem SA dan EA (RA/FA menyusul). Hasil dikirim ke drafter / atasan, sering lewat WhatsApp **(asumsi)**.
+Kantor proyek (laptop) dan lapangan (HP, satu tangan, cahaya terang; ADR 0009: HP untuk lihat + edit ringan). Satuan duct inch atau mm, skala 1:50–1:200, sistem SA dan EA (RA/FA menyusul). Hasil dikirim ke drafter / atasan, sering lewat WhatsApp **(asumsi)**.
 
 ## Capabilities and Constraints
 
 Nyata di prototype: editor komponen parametrik, duct dengan elbow otomatis (sudut bebas, reducing, siku+vane), ruangan & arsitektur, ukur, teks bergaya & catatan+panah, validasi, layer, export DXF R12 / PNG / PDF / JSON, asisten AI (Claude, kunci API pengguna), server MCP, zoom dua jari.
-Mock: akun/login (ADR 0001), marketplace template & pembayaran, penjual, integrasi AI selain Claude (ADR 0002/0003).
-Belum ada: BOQ otomatis, RA/FA, import denah, kolaborasi, cloud.
+Mock di prototype (dibuang dari MVP real, ADR 0008): akun/login, marketplace template & pembayaran, penjual, integrasi AI selain Claude (lihat `prototype/docs/adr/` 0001–0003).
+Belum ada: RA/FA, import denah, kolaborasi, cloud.
 
 ## Brand Commitments
 

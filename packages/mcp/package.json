@@ -1,0 +1,23 @@
+{
+  "name": "@temandor/mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "temandor-mcp": "./src/cli.ts"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/server.ts",
+      "default": "./src/server.ts"
+    }
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "@temandor/core": "workspace:*",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6"
+  }
+}

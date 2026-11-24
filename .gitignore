@@ -20,6 +20,21 @@ AGENTS.md
 tmp/
 temp/
 
+# Nuxt dev/build outputs
+.nuxt/
+.output/
+.nitro/
+.cache/
+.data/
+dist/
+*.tsbuildinfo
+
+# Tests & deploy
+coverage/
+playwright-report/
+test-results/
+.wrangler/
+
 # Dependencies & environments
 node_modules/
 __pycache__/

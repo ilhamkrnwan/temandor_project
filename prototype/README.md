@@ -2,7 +2,7 @@
 
 Tool web untuk membantu **mandor pemula** membuat sketsa 2D jalur ducting dan ventilasi, dengan gaya gambar seperti AutoCAD, tanpa harus menguasai AutoCAD.
 
-> Status: **P1 – Prototype fungsional** di `app/`. Mock P0 tetap di `mock/` sebagai acuan tampilan.
+> **Arsip Acuan (Prototype P1).** Aplikasi utama Temandor (Nuxt 4 + TypeScript) kini berada di root repositori (`../app/`, `../shared/cad/`). Folder `prototype/` ini dipertahankan sebagai arsip acuan perilaku, regresi DXF/BOQ (`app/test.js`, `uji-dxf/`), serta konfigurasi debug di `.vscode/launch.json`. Keputusan aplikasi real ada di `../docs/adr/` dan `../docs/tickets/`.
 
 ## Cara buka prototype
 

@@ -1,0 +1,3 @@
+/proyek /200.html 200
+/proyek/* /200.html 200
+/editor/* /200.html 200
